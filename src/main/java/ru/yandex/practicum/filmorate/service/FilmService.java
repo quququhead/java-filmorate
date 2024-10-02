@@ -43,7 +43,7 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
         Film film = filmStorage.getFilm(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
-        film.addLike(id);
+        film.addLike(userId);
         return film;
     }
 
