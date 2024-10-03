@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,36 +20,28 @@ public class UserService {
     }
 
     public User findUser(Long id) {
-        return userStorage.getUser(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+        return receiveUser(id);
     }
 
     public Collection<User> findUserFriends(Long id) {
-        User user = userStorage.getUser(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+        User user = receiveUser(id);
         return user.getFriends().stream()
-                .map(userStorage::getUser)
-                .map(Optional::get)
+                .map(this::receiveUser)
                 .collect(Collectors.toList());
     }
 
     public Collection<User> findMutualFriends(Long id, Long otherId) {
-        User user1 = userStorage.getUser(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-        User user2 = userStorage.getUser(otherId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + otherId + " не найден"));
+        User user1 = receiveUser(id);
+        User user2 = receiveUser(otherId);
         return user1.getFriends().stream()
                 .filter(ids -> user2.getFriends().contains(ids))
-                .map(userStorage::getUser)
-                .map(Optional::get)
+                .map(this::receiveUser)
                 .collect(Collectors.toList());
     }
 
     public User addFriend(Long id, Long friendId) {
-        User user1 = userStorage.getUser(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-        User user2 = userStorage.getUser(friendId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + friendId + " не найден"));
+        User user1 = receiveUser(id);
+        User user2 = receiveUser(friendId);
         user1.addFriend(friendId);
         user2.addFriend(id);
         return user1;
@@ -61,8 +52,7 @@ public class UserService {
     }
 
     public User update(User newUser) {
-        User oldUser = userStorage.getUser(newUser.getId())
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден"));
+        User oldUser = receiveUser(newUser.getId());
         oldUser.setEmail(newUser.getEmail());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setName(newUser.getName());
@@ -71,12 +61,15 @@ public class UserService {
     }
 
     public User deleteUserFriend(Long id, Long friendId) {
-        User user1 = userStorage.getUser(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-        User user2 = userStorage.getUser(friendId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + friendId + " не найден"));
+        User user1 = receiveUser(id);
+        User user2 = receiveUser(friendId);
         user1.deleteFriend(friendId);
         user2.deleteFriend(id);
         return user1;
+    }
+
+    User receiveUser(Long id) {
+        return userStorage.getUser(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 }

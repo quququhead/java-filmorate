@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.TreeSet;
@@ -17,15 +16,14 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final UserService userService;
 
     public Collection<Film> findAllFilms() {
         return filmStorage.getAllFilms();
     }
 
     public Film findFilm(Long id) {
-        return filmStorage.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id + " + id + " не найден"));
+        return receiveFilm(id);
     }
 
     public Collection<Film> findTopFilms(Integer count) {
@@ -39,17 +37,14 @@ public class FilmService {
     }
 
     public Film setLike(Long id, Long userId) {
-        User user = userStorage.getUser(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-        Film film = filmStorage.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+        User user = userService.receiveUser(userId);
+        Film film = receiveFilm(id);
         film.addLike(userId);
         return film;
     }
 
     public Film update(Film newFilm) {
-        Film oldFilm = filmStorage.getFilm(newFilm.getId())
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден"));
+        Film oldFilm = receiveFilm(newFilm.getId());
         oldFilm.setName(newFilm.getName());
         oldFilm.setDescription(newFilm.getDescription());
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
@@ -58,11 +53,14 @@ public class FilmService {
     }
 
     public Film deleteLike(Long id, Long userId) {
-        User user = userStorage.getUser(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-        Film film = filmStorage.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+        User user = userService.receiveUser(userId);
+        Film film = receiveFilm(id);
         film.deleteLike(id);
         return film;
+    }
+
+    Film receiveFilm(Long id) {
+        return filmStorage.getFilm(id)
+                .orElseThrow(() -> new NotFoundException("Фильм с id + " + id + " не найден"));
     }
 }
