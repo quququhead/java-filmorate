@@ -19,7 +19,7 @@ class UserControllerTest {
     void userShouldValidateAndCreate() {
         User user = new User("quququhead@gmail.com", "quhead",
                 LocalDate.of(2001, 1, 20), 1, "Gleb");
-        assertEquals(user, userController.create(user));
+        assertEquals(user, userController.createUser(user));
     }
 
     @Test
@@ -28,7 +28,7 @@ class UserControllerTest {
                 LocalDate.of(2001, 1, 20), 1, "Gleb");
         User user2 = new User("bossshelby@yandex.ru", "bossshelby",
                 LocalDate.of(1976, 5, 25), 1, "quququhead");
-        userController.create(user1);
-        assertEquals(user2, userController.update(user2));
+        userController.createUser(user1);
+        assertEquals(user2, userController.updateUser(user2));
     }
 }

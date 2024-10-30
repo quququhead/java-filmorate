@@ -29,7 +29,9 @@ public class Film implements Comparable<Film> {
     private int duration;
 
     private long id;
+    private RatingMPA ratingMPA;
     private final Set<Long> likes = new HashSet<>();
+    private final Set<Genre> genres = new HashSet<>();
 
     public void addLike(Long id) {
         likes.add(id);
@@ -37,6 +39,14 @@ public class Film implements Comparable<Film> {
 
     public void deleteLike(Long id) {
         likes.remove(id);
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
+    public void deleteGenre(Genre genre) {
+        genres.remove(genre);
     }
 
     @Override

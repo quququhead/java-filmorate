@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.RatingMPA;
 
 import java.time.LocalDate;
 
@@ -28,8 +29,8 @@ class FilmControllerTest {
                 "or divert his attention from her presence as an impostor, causing his sleeplessness to return. " +
                 "He arranges for them to attend different sessions to regain his ability to sleep and, " +
                 "under certain circumstances, to exchange contact information, to which she reluctantly agrees.",
-                LocalDate.of(1999, 9, 10), 139, 1);
-        assertEquals(film, filmController.create(film));
+                LocalDate.of(1999, 9, 10), 139, 1, new RatingMPA(1, "R"));
+        assertEquals(film, filmController.createFilm(film));
     }
 
     @Test
@@ -45,7 +46,7 @@ class FilmControllerTest {
                 "or divert his attention from her presence as an impostor, causing his sleeplessness to return. " +
                 "He arranges for them to attend different sessions to regain his ability to sleep and, " +
                 "under certain circumstances, to exchange contact information, to which she reluctantly agrees.",
-                LocalDate.of(1999, 9, 10), 139, 1);
+                LocalDate.of(1999, 9, 10), 139, 1, new RatingMPA(1, "R"));
         Film film2 = new Film("American Psycho", "In 1987, " +
                 "investment banker Patrick Bateman spends most of his time dining at " +
                 "popular restaurants while keeping up appearances for his fiancée, Evelyn Williams, " +
@@ -59,8 +60,8 @@ class FilmControllerTest {
                 "lures him to his apartment and kills him violently. " +
                 "Bateman disposes of the body and goes into Allen's apartment to record an outgoing message on " +
                 "his answering machine, claiming that Allen has gone to London.",
-                LocalDate.of(2000, 1, 21), 102, 1);
-        filmController.create(film1);
-        assertEquals(film2, filmController.update(film2));
+                LocalDate.of(2000, 1, 21), 102, 1, new RatingMPA(1, "R"));
+        filmController.createFilm(film1);
+        assertEquals(film2, filmController.updateFilm(film2));
     }
 }
