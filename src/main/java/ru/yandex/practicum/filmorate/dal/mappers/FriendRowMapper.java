@@ -11,9 +11,9 @@ import java.sql.SQLException;
 public class FriendRowMapper implements RowMapper<Friend> {
     @Override
     public Friend mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        return new Friend(
-                resultSet.getLong("user_id"),
-                resultSet.getLong("friend_id")
-        );
+        Friend friend = new Friend();
+        friend.setUserId(resultSet.getLong("user_id"));
+        friend.setFriendId(resultSet.getLong("friend_id"));
+        return friend;
     }
 }

@@ -32,10 +32,21 @@ class UserRepositoryTest {
 
     private void createUsers() {
         myUsers.clear();
-        User user1 = new User("quququhead@gmail.com", "quhead",
-                LocalDate.of(2001, 1, 20), 1, "Gleb");
-        User user2 = new User("bossshelby@yandex.ru", "bossshelby",
-                LocalDate.of(1976, 5, 25), 2, "quququhead");
+
+        User user1 = new User();
+        user1.setEmail("quququhead@gmail.com");
+        user1.setLogin("quhead");
+        user1.setBirthday(LocalDate.of(2001, 1, 20));
+        user1.setId(1);
+        user1.setName("Gleb");
+
+        User user2 = new User();
+        user2.setEmail("bossshelby@yandex.ru");
+        user2.setLogin("bossshelby");
+        user2.setBirthday(LocalDate.of(1976, 5, 25));
+        user2.setId(2);
+        user2.setName("quququhead");
+
         user1 = userRepository.addUser(user1);
         user2 = userRepository.addUser(user2);
         myUsers.add(user1);
@@ -81,8 +92,14 @@ class UserRepositoryTest {
     @Test
     void shouldGetMutualFriends() {
         createUsers();
-        User user = new User("bob@gmail.com", "bigbob",
-                LocalDate.of(2001, 4, 6), 3, "bob");
+
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        user.setLogin("bigbob");
+        user.setBirthday(LocalDate.of(2001, 4, 6));
+        user.setId(3);
+        user.setName("bob");
+
         user = userRepository.addUser(user);
         userRepository.addUserFriend(myUsers.get(0).getId(), myUsers.get(1).getId());
         userRepository.addUserFriend(user.getId(), myUsers.get(1).getId());
@@ -100,8 +117,12 @@ class UserRepositoryTest {
 
     @Test
     void shouldAddUser() {
-        User user = new User("bob@gmail.com", "bigbob",
-                LocalDate.of(2001, 4, 6), 3, "bob");
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        user.setLogin("bigbob");
+        user.setBirthday(LocalDate.of(2001, 4, 6));
+        user.setId(3);
+        user.setName("bob");
         userRepository.addUser(user);
         assertEquals(1, userRepository.getAllUsers().size());
     }
@@ -109,7 +130,7 @@ class UserRepositoryTest {
     @Test
     void shouldUpdateUser() {
         createUsers();
-        User user = myUsers.get(0);
+        User user = myUsers.getFirst();
         user.setEmail("bob@gmail.com");
         user.setLogin("bigbob");
         user.setBirthday(LocalDate.of(2001, 4, 6));

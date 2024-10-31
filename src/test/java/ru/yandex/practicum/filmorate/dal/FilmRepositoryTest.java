@@ -32,13 +32,24 @@ class FilmRepositoryTest {
     private final UserRepository userRepository;
 
     private Film createFilm() {
-        return new Film("Fight Club", "Film about the unnamed Narrator.",
-                LocalDate.of(1999, 9, 10), 139, 1, new RatingMPA(1, "R"));
+        Film film = new Film();
+        film.setName("Fight Club");
+        film.setDescription("Film about the unnamed Narrator.");
+        film.setReleaseDate(LocalDate.of(1999, 9, 10));
+        film.setDuration(139);
+        film.setId(1);
+        film.setRatingMPA(RatingMPA.builder().id(1).name("R").build());
+        return film;
     }
 
     private User createUser() {
-        return new User("quququhead@gmail.com", "quhead",
-                LocalDate.of(2001, 1, 20), 1, "Gleb");
+        User user = new User();
+        user.setEmail("quququhead@gmail.com");
+        user.setLogin("quhead");
+        user.setBirthday(LocalDate.of(2001, 1, 20));
+        user.setId(1);
+        user.setName("Gleb");
+        return user;
     }
 
     @Test

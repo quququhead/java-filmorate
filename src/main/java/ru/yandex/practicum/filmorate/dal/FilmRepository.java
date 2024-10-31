@@ -55,7 +55,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             for (Film film : films) {
                 film.getGenres().addAll(filmGenres
                         .stream()
-                        .filter(filmGenre -> Objects.equals(film.getId(), filmGenre.getFilmId()))
+                        .filter(filmGenre -> film.getId() == filmGenre.getFilmId())
                         .map(filmGenre -> Genre.builder()
                                 .id(filmGenre.getGenreId())
                                 .name(genres
@@ -63,8 +63,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                                         .filter(genre -> genre.getId() == (filmGenre.getGenreId())).findFirst().get().getName())
                                 .build())
                         .toList());
-                film.getLikes().addAll(likes.stream().filter(like -> Objects.equals(like.getFilmId(), film.getId())).map(Like::getUserId).toList());
-                film.getRatingMPA().setName(ratingMPAs.stream().filter(mpa -> Objects.equals(film.getRatingMPA().getId(), mpa.getId())).findFirst().get().getName());
+                film.getLikes().addAll(likes.stream().filter(like -> like.getFilmId() == film.getId()).map(Like::getUserId).toList());
+                film.getRatingMPA().setName(ratingMPAs.stream().filter(ratingMPA -> film.getRatingMPA().getId() == ratingMPA.getId()).findFirst().get().getName());
             }
         }
         return films;
