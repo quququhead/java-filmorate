@@ -21,7 +21,7 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
             "WHERE user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
     private static final String USER_MUTUAL_FRIENDS_QUERY = "SELECT * FROM users " +
             "WHERE user_id IN (SELECT friend_id FROM friends WHERE user_id = ?) AND " +
-            "id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
+            "user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
     private static final String INSERT_QUERY = "INSERT INTO users(user_name, login, email, birthday_date)" +
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET user_name = ?, login = ?, email = ?," +

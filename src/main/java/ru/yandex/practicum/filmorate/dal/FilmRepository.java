@@ -21,7 +21,7 @@ import java.util.Objects;
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE film_id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO films (film_name, description, release_date, duration, rating_mpa_id) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_QUERY = "INSERT INTO films(film_name, description, release_date, duration, rating_mpa_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET film_name = ?, description = ?, release_date = ?," +
             " duration = ?, rating_mpa_id = ? WHERE film_id = ?";
 
