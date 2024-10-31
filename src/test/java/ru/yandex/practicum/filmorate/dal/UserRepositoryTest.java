@@ -49,7 +49,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void shouldGetUsers() {
+    void shouldGetAllUsers() {
         createUsers();
         Collection<User> users = userRepository.getAllUsers();
         assertEquals(2, users.size());

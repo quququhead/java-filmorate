@@ -14,9 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -50,11 +48,17 @@ class FilmRepositoryTest {
     }
 
     @Test
-    void shouldGetFilms() {
+    void shouldGetAllFilms() {
         Film film = createFilm();
         filmRepository.addFilm(film);
         Collection<Film> films = filmRepository.getAllFilms();
         assertEquals(1, films.size());
+    }
+
+    @Test
+    void shouldGetNullFilm() {
+        Film film = filmRepository.getFilm(1);
+        assertNull(film);
     }
 
     @Test
