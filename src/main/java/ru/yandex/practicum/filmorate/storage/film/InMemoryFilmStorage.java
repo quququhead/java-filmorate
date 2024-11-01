@@ -1,16 +1,15 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-@Component
-@Primary
+
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
@@ -21,8 +20,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilm(Long id) {
-        return Optional.ofNullable(films.get(id));
+    public Film getFilm(long filmId) {
+        return films.get(filmId);
     }
 
     @Override
@@ -30,6 +29,37 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.setId(getNextId());
         films.put(film.getId(), film);
         return film;
+    }
+
+    @Override
+    public void setLike(long id, long userId) {
+        Film film = films.get(id);
+        checkNotNull(film);
+        film.addLike(userId);
+    }
+
+    @Override
+    public Film updateFilm(Film newFilm) {
+        Film oldFilm = films.get(newFilm.getId());
+        checkNotNull(oldFilm);
+        oldFilm.setName(newFilm.getName());
+        oldFilm.setDescription(newFilm.getDescription());
+        oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        oldFilm.setDuration(newFilm.getDuration());
+        return oldFilm;
+    }
+
+    @Override
+    public void deleteLike(long id, long userId) {
+        Film film = films.get(id);
+        checkNotNull(film);
+        film.deleteLike(userId);
+    }
+
+    private void checkNotNull(Film film) {
+        if (film == null) {
+            throw new NotFoundException("Фильм не найден");
+        }
     }
 
     private long getNextId() {

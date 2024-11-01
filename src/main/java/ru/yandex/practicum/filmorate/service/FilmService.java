@@ -3,27 +3,35 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import static java.time.Month.DECEMBER;
 
 @Service
 @RequiredArgsConstructor
 public class FilmService {
 
+    private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, DECEMBER, 28);
+
     private final FilmStorage filmStorage;
-    private final UserService userService;
+    private final UserStorage userStorage;
 
     public Collection<Film> findAllFilms() {
         return filmStorage.getAllFilms();
     }
 
-    public Film findFilm(Long id) {
-        return receiveFilm(id);
+    public Film findFilm(long filmId) {
+        Film film = filmStorage.getFilm(filmId);
+        checkFilmNotNull(film);
+        return film;
     }
 
     public Collection<Film> findTopFilms(Integer count) {
@@ -32,35 +40,36 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public Film create(Film film) {
+    public Film createFilm(Film film) {
+        validate(film);
         return filmStorage.addFilm(film);
     }
 
-    public Film setLike(Long id, Long userId) {
-        User user = userService.receiveUser(userId);
-        Film film = receiveFilm(id);
-        film.addLike(userId);
-        return film;
+    public void setLike(long id, long userId) {
+        userStorage.getUser(userId);
+        filmStorage.setLike(id, userId);
     }
 
-    public Film update(Film newFilm) {
-        Film oldFilm = receiveFilm(newFilm.getId());
-        oldFilm.setName(newFilm.getName());
-        oldFilm.setDescription(newFilm.getDescription());
-        oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        oldFilm.setDuration(newFilm.getDuration());
-        return oldFilm;
+    public Film updateFilm(Film newFilm) {
+        validate(newFilm);
+        checkFilmNotNull(filmStorage.getFilm(newFilm.getId()));
+        return filmStorage.updateFilm(newFilm);
     }
 
-    public Film deleteLike(Long id, Long userId) {
-        User user = userService.receiveUser(userId);
-        Film film = receiveFilm(id);
-        film.deleteLike(id);
-        return film;
+    public void deleteLike(long id, long userId) {
+        userStorage.getUser(userId);
+        filmStorage.deleteLike(id, userId);
     }
 
-    Film receiveFilm(Long id) {
-        return filmStorage.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id + " + id + " не найден"));
+    private void checkFilmNotNull(Film film) {
+        if (film == null) {
+            throw new NotFoundException("Фильм не найден");
+        }
+    }
+
+    private void validate(Film film) throws ValidationException {
+        if (film.getReleaseDate().isBefore(FIRST_RELEASE_DATE)) {
+            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
+        }
     }
 }
