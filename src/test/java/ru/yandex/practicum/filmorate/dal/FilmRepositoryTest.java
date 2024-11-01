@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.dal.mappers.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.RatingMPA;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
         FriendRepository.class, FriendRowMapper.class,
         GenreRepository.class, GenreRowMapper.class,
         LikeRepository.class, LikeRowMapper.class,
-        RatingMPARepository.class, RatingMPARowMapper.class,
+        MpaRepository.class, MpaRowMapper.class,
         UserRepository.class, UserRowMapper.class
 })
 class FilmRepositoryTest {
@@ -38,7 +38,7 @@ class FilmRepositoryTest {
         film.setReleaseDate(LocalDate.of(1999, 9, 10));
         film.setDuration(139);
         film.setId(1);
-        film.setRatingMPA(RatingMPA.builder().id(1).name("R").build());
+        film.setMpa(Mpa.builder().id(1).name("R").build());
         return film;
     }
 

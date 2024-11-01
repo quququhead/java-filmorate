@@ -27,7 +27,7 @@ public class Film implements Comparable<Film> {
     private int duration;
 
     private long id;
-    private RatingMPA ratingMPA;
+    private Mpa mpa;
     private final Set<Long> likes = new HashSet<>();
     private final Set<Genre> genres = new HashSet<>();
 

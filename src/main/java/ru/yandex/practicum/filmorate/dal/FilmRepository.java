@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.RatingMPA;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.Date;
@@ -27,7 +27,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private final FilmGenreRepository filmGenreRepository;
     private final GenreRepository genreRepository;
     private final LikeRepository likeRepository;
-    private final RatingMPARepository ratingMPARepository;
+    private final MpaRepository mpaRepository;
 
     @Autowired
     public FilmRepository(JdbcTemplate jdbc,
@@ -35,12 +35,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                           FilmGenreRepository filmGenreRepository,
                           GenreRepository genreRepository,
                           LikeRepository likeRepository,
-                          RatingMPARepository ratingMPARepository) {
+                          MpaRepository mpaRepository) {
         super(jdbc, mapper);
         this.filmGenreRepository = filmGenreRepository;
         this.genreRepository = genreRepository;
         this.likeRepository = likeRepository;
-        this.ratingMPARepository = ratingMPARepository;
+        this.mpaRepository = mpaRepository;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             Collection<FilmGenre> filmGenres = filmGenreRepository.getAllGenres();
             Collection<Genre> genres = genreRepository.getAllGenres();
             Collection<Like> likes = likeRepository.getAllLikes();
-            Collection<RatingMPA> ratingMPAs = ratingMPARepository.getAllRatingMPAs();
+            Collection<Mpa> mpas = mpaRepository.getAllMpas();
             for (Film film : films) {
                 film.getGenres().addAll(filmGenres
                         .stream()
@@ -63,7 +63,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                                 .build())
                         .toList());
                 film.getLikes().addAll(likes.stream().filter(like -> like.getFilmId() == film.getId()).map(Like::getUserId).toList());
-                film.getRatingMPA().setName(ratingMPAs.stream().filter(ratingMPA -> film.getRatingMPA().getId() == ratingMPA.getId()).findFirst().get().getName());
+                film.getMpa().setName(mpas.stream().filter(mpa -> film.getMpa().getId() == mpa.getId()).findFirst().get().getName());
             }
         }
         return films;
@@ -83,7 +83,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                             .build())
                     .toList());
             film.getLikes().addAll(likeRepository.getAllLikes(film.getId()).stream().map(Like::getUserId).toList());
-            film.getRatingMPA().setName(ratingMPARepository.getRatingMPA(film.getRatingMPA().getId()).getName());
+            film.getMpa().setName(mpaRepository.getMpa(film.getMpa().getId()).getName());
         }
         return film;
     }
@@ -96,7 +96,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDescription(),
                 Date.valueOf(film.getReleaseDate()),
                 film.getDuration(),
-                film.getRatingMPA().getId()
+                film.getMpa().getId()
         );
         if (!film.getGenres().isEmpty()) {
             filmGenreRepository.addGenresToFilm(id, film.getGenres().stream().map(Genre::getId).toList());
@@ -118,7 +118,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 newFilm.getDescription(),
                 Date.valueOf(newFilm.getReleaseDate()),
                 newFilm.getDuration(),
-                newFilm.getRatingMPA().getId(),
+                newFilm.getMpa().getId(),
                 newFilm.getId()
         );
         if (!newFilm.getGenres().isEmpty()) {
