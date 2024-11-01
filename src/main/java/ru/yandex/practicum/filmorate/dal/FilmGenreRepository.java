@@ -13,9 +13,9 @@ import java.util.List;
 
 @Repository
 public class FilmGenreRepository extends BaseRepository<FilmGenre> {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM film_genres";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM film_genres ORDER BY genre_id";
     private static final String FIND_ALL_BY_FILM_ID_QUERY = "SELECT * FROM film_genres " +
-            "WHERE film_id = ?";
+            "WHERE film_id = ? ORDER BY genre_id";
     private static final String INSERT_QUERY = "INSERT INTO film_genres(film_id, genre_id) VALUES (?, ?)";
     private static final String DELETE_ALL_FROM_FILM_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
 
