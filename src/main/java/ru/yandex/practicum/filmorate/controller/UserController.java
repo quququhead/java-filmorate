@@ -2,8 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,6 +21,7 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -24,49 +32,37 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User findUser(@PathVariable Long id) {
+    public User findUser(@PathVariable long id) {
         return userService.findUser(id);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> findUserFriends(@PathVariable Long id) {
+    public Collection<User> findUserFriends(@PathVariable long id) {
         return userService.findUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> findMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public Collection<User> findMutualFriends(@PathVariable long id, @PathVariable long otherId) {
         return userService.findMutualFriends(id, otherId);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        return userService.addFriend(id, friendId);
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.addFriend(id, friendId);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public User create(@Valid @RequestBody User user) throws ValidationException {
-        validate(user);
-        return userService.create(user);
+    public User createUser(@Valid @RequestBody User user) throws ValidationException {
+        return userService.createUser(user);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) throws NotFoundException, ValidationException {
-        validate(newUser);
-        return userService.update(newUser);
+    public User updateUser(@Valid @RequestBody User newUser) throws NotFoundException, ValidationException {
+        return userService.updateUser(newUser);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteUserFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        return userService.deleteUserFriend(id, friendId);
-    }
-
-    private void validate(User user) throws ValidationException {
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+    public void deleteUserFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.deleteUserFriend(id, friendId);
     }
 }

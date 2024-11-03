@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -12,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@AllArgsConstructor
 public class Film implements Comparable<Film> {
 
     @NotBlank(message = "description cannot be null, empty or blank")
@@ -29,7 +27,9 @@ public class Film implements Comparable<Film> {
     private int duration;
 
     private long id;
+    private Mpa mpa;
     private final Set<Long> likes = new HashSet<>();
+    private final Set<Genre> genres = new HashSet<>();
 
     public void addLike(Long id) {
         likes.add(id);
@@ -37,6 +37,14 @@ public class Film implements Comparable<Film> {
 
     public void deleteLike(Long id) {
         likes.remove(id);
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
+    public void deleteGenre(Genre genre) {
+        genres.remove(genre);
     }
 
     @Override
