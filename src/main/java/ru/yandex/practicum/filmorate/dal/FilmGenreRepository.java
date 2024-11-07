@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,20 +28,8 @@ public class FilmGenreRepository extends BaseRepository<FilmGenre> {
         return findMany(FIND_ALL_BY_FILM_ID_QUERY, filmId);
     }
 
-    public void addGenresToFilm(long filmId, List<Long> genreIds) {
-        batchUpdateBase(INSERT_QUERY, new BatchPreparedStatementSetter() {
-
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, filmId);
-                ps.setLong(2, genreIds.get(i));
-            }
-
-            @Override
-            public int getBatchSize() {
-                return genreIds.size();
-            }
-        });
+    public void addGenresToFilm(List<Object[]> batch) {
+        batchUpdateBase(INSERT_QUERY, batch);
     }
 
     public void deleteGenresFromFilm(long filmId) {

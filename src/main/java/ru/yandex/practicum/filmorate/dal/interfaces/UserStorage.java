@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.dal.interfaces;
 
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -13,11 +13,7 @@ public interface UserStorage {
 
     Collection<User> getMutualFriends(long userId, long otherUserId);
 
-    void addUserFriend(long userId, long friendId);
-
-    User addUser(User user);
+    long addUser(User user);
 
     User updateUser(User newUser);
-
-    void deleteUserFriend(long userId, long friendId);
 }

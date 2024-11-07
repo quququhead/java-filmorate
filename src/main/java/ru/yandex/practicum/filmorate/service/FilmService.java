@@ -2,74 +2,108 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
+import ru.yandex.practicum.filmorate.dal.GenreRepository;
+import ru.yandex.practicum.filmorate.dal.LikeRepository;
+import ru.yandex.practicum.filmorate.dal.MpaRepository;
+import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import static java.time.Month.DECEMBER;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-
-    private static final LocalDate FIRST_RELEASE_DATE = LocalDate.of(1895, DECEMBER, 28);
-
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FilmGenreRepository filmGenreRepository;
+    private final GenreRepository genreRepository;
+    private final LikeRepository likeRepository;
+    private final MpaRepository mpaRepository;
 
     public Collection<Film> findAllFilms() {
-        return filmStorage.getAllFilms();
+        return prepare(filmStorage.getAllFilms());
+    }
+
+    public Collection<Film> findTopFilms(Integer count) {
+        return prepare(filmStorage.getAllFilmsBy(count));
     }
 
     public Film findFilm(long filmId) {
         Film film = filmStorage.getFilm(filmId);
         checkFilmNotNull(film);
-        return film;
-    }
-
-    public Collection<Film> findTopFilms(Integer count) {
-        return new TreeSet<>(filmStorage.getAllFilms()).stream()
-                .limit(count)
-                .collect(Collectors.toList());
+        return prepare(film);
     }
 
     public Film createFilm(Film film) {
-        validate(film);
-        return filmStorage.addFilm(film);
+        film.setId(filmStorage.addFilm(film));
+        return process(film);
+    }
+
+    public Film updateFilm(Film newFilm) {
+        checkFilmNotNull(filmStorage.getFilm(newFilm.getId()));
+        filmGenreRepository.deleteGenresFromFilm(newFilm.getId());
+        return process(filmStorage.updateFilm(newFilm));
     }
 
     public void setLike(long id, long userId) {
         userStorage.getUser(userId);
-        filmStorage.setLike(id, userId);
-    }
-
-    public Film updateFilm(Film newFilm) {
-        validate(newFilm);
-        checkFilmNotNull(filmStorage.getFilm(newFilm.getId()));
-        return filmStorage.updateFilm(newFilm);
+        likeRepository.addLikeToFilm(id, userId);
     }
 
     public void deleteLike(long id, long userId) {
         userStorage.getUser(userId);
-        filmStorage.deleteLike(id, userId);
+        likeRepository.deleteLikeFromFilm(id, userId);
     }
 
     private void checkFilmNotNull(Film film) {
         if (film == null) {
-            throw new NotFoundException("Фильм не найден");
+            throw new NoSuchElementException("Фильм не найден");
         }
     }
 
-    private void validate(Film film) throws ValidationException {
-        if (film.getReleaseDate().isBefore(FIRST_RELEASE_DATE)) {
-            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
+    private Film process(Film film) {
+        if (Objects.nonNull(film.getGenres())) {
+            filmGenreRepository.addGenresToFilm(film.getGenres().stream()
+                    .map(genre -> new Object[]{film.getId(), genre.getId()})
+                    .toList());
         }
+        return prepare(film);
+    }
+
+    private Film prepare(Film film) {
+        film.setGenres(new LinkedHashSet<>(genreRepository.getAllGenresByFilmId(film.getId())));
+        film.getMpa().setName(mpaRepository.getMpa(film.getMpa().getId()).getName());
+        return film;
+    }
+
+    private List<Film> prepare(Collection<Film> films) {
+        if (films.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Collection<FilmGenre> filmGenres = filmGenreRepository.getAllGenres();
+        Collection<Genre> genres = genreRepository.getAllGenres();
+        Collection<Mpa> mpas = mpaRepository.getAllMpas();
+
+        return films.stream()
+                .peek(film -> {
+                    film.getGenres().addAll(filmGenres.stream()
+                            .filter(filmGenre -> film.getId() == filmGenre.getFilmId())
+                            .map(filmGenre -> Genre.builder()
+                                    .id(filmGenre.getGenreId())
+                                    .name(genres.stream()
+                                            .filter(genre -> genre.getId() == filmGenre.getGenreId())
+                                            .findFirst().orElseThrow().getName())
+                                    .build())
+                            .toList());
+                    film.getMpa().setName(mpas.stream()
+                            .filter(mpa -> film.getMpa().getId() == mpa.getId())
+                            .findFirst().orElseThrow().getName());
+                }).toList();
     }
 }

@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,13 +20,9 @@ public class GenreService {
 
     public Genre findGenre(long genreId) {
         Genre genre = genreRepository.getGenre(genreId);
-        checkGenreNotNull(genre);
-        return genre;
-    }
-
-    private void checkGenreNotNull(Genre genre) {
         if (genre == null) {
-            throw new NotFoundException("Жанр с не найден");
+            throw new NoSuchElementException("Жанр не найден");
         }
+        return genre;
     }
 }

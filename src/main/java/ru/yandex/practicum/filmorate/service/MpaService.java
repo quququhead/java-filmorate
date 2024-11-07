@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.MpaRepository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,13 +20,9 @@ public class MpaService {
 
     public Mpa findMpa(long mpaId) {
         Mpa mpa = mpaRepository.getMpa(mpaId);
-        checkMpaNotNull(mpa);
-        return mpa;
-    }
-
-    private void checkMpaNotNull(Mpa mpa) {
         if (mpa == null) {
-            throw new NotFoundException("Рейтинг с не найден");
+            throw new NoSuchElementException("Рейтинг не найден");
         }
+        return mpa;
     }
 }

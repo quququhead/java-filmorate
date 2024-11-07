@@ -2,27 +2,22 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.dal.FriendRepository;
+import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
+    private final FriendRepository friendRepository;
 
     public Collection<User> findAllUsers() {
         return userStorage.getAllUsers();
-    }
-
-    public User findUser(long userId) {
-        User user = userStorage.getUser(userId);
-        checkUserNotNull(user);
-        return user;
     }
 
     public Collection<User> findUserFriends(long userId) {
@@ -36,40 +31,36 @@ public class UserService {
         return userStorage.getMutualFriends(userId, otherUserId);
     }
 
-    public void addFriend(long userId, long friendId) {
-        checkUserNotNull(userStorage.getUser(userId));
-        checkUserNotNull(userStorage.getUser(friendId));
-        userStorage.addUserFriend(userId, friendId);
+    public User findUser(long userId) {
+        User user = userStorage.getUser(userId);
+        checkUserNotNull(user);
+        return user;
     }
 
     public User createUser(User user) {
-        validate(user);
-        return userStorage.addUser(user);
+        user.setId(userStorage.addUser(user));
+        return user;
     }
 
     public User updateUser(User newUser) {
-        validate(newUser);
         return userStorage.updateUser(newUser);
+    }
+
+    public void addFriend(long userId, long friendId) {
+        checkUserNotNull(userStorage.getUser(userId));
+        checkUserNotNull(userStorage.getUser(friendId));
+        friendRepository.addUserFriend(userId, friendId);
     }
 
     public void deleteUserFriend(long userId, long friendId) {
         checkUserNotNull(userStorage.getUser(userId));
         checkUserNotNull(userStorage.getUser(friendId));
-        userStorage.deleteUserFriend(userId, friendId);
+        friendRepository.deleteUserFriend(userId, friendId);
     }
 
     private void checkUserNotNull(User user) {
         if (user == null) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-    }
-
-    private void validate(User user) throws ValidationException {
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
+            throw new NoSuchElementException("Пользователь не найден");
         }
     }
 }
