@@ -1,96 +1,46 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.Date;
 import java.util.Collection;
 
 @Repository
-@Primary
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
+    private static final String FIND_MOST_POPULAR_QUERY = "SELECT f.* FROM films AS f LEFT JOIN likes AS l ON l.film_id = f.film_id " +
+            "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC LIMIT ?";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE film_id = ?";
     private static final String INSERT_QUERY = "INSERT INTO films(film_name, description, release_date, duration, rating_mpa_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET film_name = ?, description = ?, release_date = ?," +
             " duration = ?, rating_mpa_id = ? WHERE film_id = ?";
 
-    private final FilmGenreRepository filmGenreRepository;
-    private final GenreRepository genreRepository;
-    private final LikeRepository likeRepository;
-    private final MpaRepository mpaRepository;
-
-    @Autowired
-    public FilmRepository(JdbcTemplate jdbc,
-                          RowMapper<Film> mapper,
-                          FilmGenreRepository filmGenreRepository,
-                          GenreRepository genreRepository,
-                          LikeRepository likeRepository,
-                          MpaRepository mpaRepository) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
-        this.filmGenreRepository = filmGenreRepository;
-        this.genreRepository = genreRepository;
-        this.likeRepository = likeRepository;
-        this.mpaRepository = mpaRepository;
     }
 
     @Override
     public Collection<Film> getAllFilms() {
-        Collection<Film> films = findMany(FIND_ALL_QUERY);
-        if (!films.isEmpty()) {
-            Collection<FilmGenre> filmGenres = filmGenreRepository.getAllGenres();
-            Collection<Genre> genres = genreRepository.getAllGenres();
-            Collection<Like> likes = likeRepository.getAllLikes();
-            Collection<Mpa> mpas = mpaRepository.getAllMpas();
-            for (Film film : films) {
-                film.getGenres().addAll(filmGenres
-                        .stream()
-                        .filter(filmGenre -> film.getId() == filmGenre.getFilmId())
-                        .map(filmGenre -> Genre.builder()
-                                .id(filmGenre.getGenreId())
-                                .name(genres
-                                        .stream()
-                                        .filter(genre -> genre.getId() == (filmGenre.getGenreId())).findFirst().get().getName())
-                                .build())
-                        .toList());
-                film.getLikes().addAll(likes.stream().filter(like -> like.getFilmId() == film.getId()).map(Like::getUserId).toList());
-                film.getMpa().setName(mpas.stream().filter(mpa -> film.getMpa().getId() == mpa.getId()).findFirst().get().getName());
-            }
-        }
-        return films;
+        return findMany(FIND_ALL_QUERY);
+    }
+
+    @Override
+    public Collection<Film> getAllFilmsBy(long count) {
+        return findMany(FIND_MOST_POPULAR_QUERY, count);
     }
 
     @Override
     public Film getFilm(long filmId) {
-        Film film = findOne(FIND_BY_ID_QUERY, filmId);
-        if (film != null) {
-            Collection<Genre> genres = genreRepository.getAllGenres();
-            film.getGenres().addAll(filmGenreRepository
-                    .getAllGenres(film.getId())
-                    .stream()
-                    .map(filmGenre -> Genre.builder()
-                            .id(filmGenre.getGenreId())
-                            .name(genres.stream().filter(genre -> genre.getId() == (filmGenre.getGenreId())).findFirst().get().getName())
-                            .build())
-                    .toList());
-            film.getLikes().addAll(likeRepository.getAllLikes(film.getId()).stream().map(Like::getUserId).toList());
-            film.getMpa().setName(mpaRepository.getMpa(film.getMpa().getId()).getName());
-        }
-        return film;
+        return findOne(FIND_BY_ID_QUERY, filmId);
     }
 
     @Override
-    public Film addFilm(Film film) {
-        long id = insert(
+    public long addFilm(Film film) {
+        return insert(
                 INSERT_QUERY,
                 film.getName(),
                 film.getDescription(),
@@ -98,16 +48,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDuration(),
                 film.getMpa().getId()
         );
-        if (!film.getGenres().isEmpty()) {
-            filmGenreRepository.addGenresToFilm(id, film.getGenres().stream().map(Genre::getId).toList());
-        }
-        film.setId(id);
-        return film;
-    }
-
-    @Override
-    public void setLike(long filmId, long userId) {
-        likeRepository.addLikeToFilm(filmId, userId);
     }
 
     @Override
@@ -121,15 +61,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 newFilm.getMpa().getId(),
                 newFilm.getId()
         );
-        if (!newFilm.getGenres().isEmpty()) {
-            filmGenreRepository.deleteGenresFromFilm(newFilm.getId());
-            filmGenreRepository.addGenresToFilm(newFilm.getId(), newFilm.getGenres().stream().map(Genre::getId).toList());
-        }
         return newFilm;
-    }
-
-    @Override
-    public void deleteLike(long filmId, long userId) {
-        likeRepository.deleteLikeFromFilm(filmId, userId);
     }
 }
