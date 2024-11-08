@@ -4,18 +4,24 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Validated
 public class UserController {
-
     private final UserService userService;
+
+    @GetMapping("/{id}/feed")
+    public List<Feed> feed(@PathVariable long id) {
+        return userService.getFeed(id);
+    }
 
     @GetMapping
     public Collection<User> findAllUsers() {

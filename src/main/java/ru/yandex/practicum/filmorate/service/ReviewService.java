@@ -3,15 +3,20 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FeedRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewDislikeRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewLikeRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewRepository;
 import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,6 +24,7 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+    private final FeedRepository feedRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewDislikeRepository reviewDislikeRepository;
@@ -38,8 +44,10 @@ public class ReviewService {
         log.debug("create review {}", review);
         notNull(filmStorage.getFilm(review.filmId()));
         notNull(userStorage.getUser(review.userId()));
+        long reviewId = reviewRepository.create(review);
+        feedRepository.create(new Feed(review.userId(), EventType.REVIEW, Operation.ADD, reviewId, Instant.now().toEpochMilli()));
         return new Review(
-                reviewRepository.create(review),
+                reviewId,
                 review.content(),
                 review.isPositive(),
                 review.userId(),
@@ -51,11 +59,15 @@ public class ReviewService {
     public Review update(Review review) {
         log.debug("update review {}", review);
         reviewRepository.update(review);
-        return notNull(reviewRepository.findOneById(review.reviewId()));
+        Review updatedReview = notNull(reviewRepository.findOneById(review.reviewId()));
+        feedRepository.create(new Feed(updatedReview.userId(), EventType.REVIEW, Operation.UPDATE, updatedReview.reviewId(), Instant.now().toEpochMilli()));
+        return updatedReview;
     }
 
     public void delete(long id) {
         log.debug("delete review {}", id);
+        Review review = notNull(reviewRepository.findOneById(id));
+        feedRepository.create(new Feed(review.userId(), EventType.REVIEW, Operation.REMOVE, id, Instant.now().toEpochMilli()));
         reviewRepository.delete(id);
     }
 
