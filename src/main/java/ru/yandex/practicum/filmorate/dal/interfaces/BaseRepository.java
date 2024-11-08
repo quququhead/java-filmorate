@@ -1,6 +1,5 @@
-package ru.yandex.practicum.filmorate.dal;
+package ru.yandex.practicum.filmorate.dal.interfaces;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,10 +10,13 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@RequiredArgsConstructor
-public class BaseRepository<T> {
-    private final JdbcTemplate jdbc;
+public abstract class BaseRepository<T> extends BaseUpdateExecutor {
     private final RowMapper<T> mapper;
+
+    public BaseRepository(JdbcTemplate jdbc, RowMapper<T> mapper) {
+        super(jdbc);
+        this.mapper = mapper;
+    }
 
     protected T findOne(String query, Object... params) {
         try {
@@ -26,10 +28,6 @@ public class BaseRepository<T> {
 
     protected List<T> findMany(String query, Object... params) {
         return jdbc.query(query, mapper, params);
-    }
-
-    public void delete(String query, Object... params) {
-        jdbc.update(query, params);
     }
 
     protected long insert(String query, Object... params) {
@@ -48,13 +46,6 @@ public class BaseRepository<T> {
             return id;
         } else {
             throw new NoSuchElementException("Не удалось сохранить данные");
-        }
-    }
-
-    protected void update(String query, Object... params) {
-        int rowsUpdated = jdbc.update(query, params);
-        if (rowsUpdated == 0) {
-            throw new NoSuchElementException("Не удалось обновить данные");
         }
     }
 
