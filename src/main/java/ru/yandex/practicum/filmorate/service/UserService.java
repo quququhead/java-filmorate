@@ -49,13 +49,13 @@ public class UserService {
     public void addFriend(long userId, long friendId) {
         checkUserNotNull(userStorage.getUser(userId));
         checkUserNotNull(userStorage.getUser(friendId));
-        friendRepository.addUserFriend(userId, friendId);
+        friendRepository.insert(userId, friendId);
     }
 
     public void deleteUserFriend(long userId, long friendId) {
         checkUserNotNull(userStorage.getUser(userId));
         checkUserNotNull(userStorage.getUser(friendId));
-        friendRepository.deleteUserFriend(userId, friendId);
+        friendRepository.delete(userId, friendId);
     }
 
     private void checkUserNotNull(User user) {
