@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import ru.yandex.practicum.filmorate.dal.mappers.FriendRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -23,11 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FriendRepository.class, FriendRowMapper.class,
-        UserRepository.class, UserRowMapper.class
-})
+@Import({UserRepository.class, UserRowMapper.class, FriendRepository.class})
 class UserRepositoryTest {
     private final UserRepository userRepository;
+    private final FriendRepository friendRepository;
     private final List<User> myUsers = new ArrayList<>();
 
     private void createUsers() {
@@ -47,8 +45,8 @@ class UserRepositoryTest {
         user2.setId(2);
         user2.setName("quququhead");
 
-        user1 = userRepository.addUser(user1);
-        user2 = userRepository.addUser(user2);
+        user1.setId(userRepository.addUser(user1));
+        user2.setId(userRepository.addUser(user2));
         myUsers.add(user1);
         myUsers.add(user2);
     }
@@ -64,7 +62,7 @@ class UserRepositoryTest {
         createUsers();
         Collection<User> users = userRepository.getAllUsers();
         assertEquals(2, users.size());
-        assertEquals(myUsers.get(0).getName(), users.stream().toList().get(0).getName());
+        assertEquals(myUsers.getFirst().getName(), users.stream().toList().getFirst().getName());
     }
 
     @Test
@@ -76,17 +74,9 @@ class UserRepositoryTest {
     @Test
     void shouldGetUser() {
         createUsers();
-        User user = userRepository.getUser(myUsers.get(0).getId());
+        User user = userRepository.getUser(myUsers.getFirst().getId());
         assertNotNull(user);
-        assertEquals(myUsers.get(0).getName(), user.getName());
-    }
-
-    @Test
-    void shouldGetUserFriends() {
-        createUsers();
-        userRepository.addUserFriend(myUsers.get(0).getId(), myUsers.get(1).getId());
-        Collection<User> users = userRepository.getUserFriends(myUsers.get(0).getId());
-        assertEquals(1, users.size());
+        assertEquals(myUsers.getFirst().getName(), user.getName());
     }
 
     @Test
@@ -100,19 +90,19 @@ class UserRepositoryTest {
         user.setId(3);
         user.setName("bob");
 
-        user = userRepository.addUser(user);
-        userRepository.addUserFriend(myUsers.get(0).getId(), myUsers.get(1).getId());
-        userRepository.addUserFriend(user.getId(), myUsers.get(1).getId());
-        Collection<User> users = userRepository.getMutualFriends(myUsers.get(0).getId(), user.getId());
+        user.setId(userRepository.addUser(user));
+        friendRepository.insert(myUsers.getFirst().getId(), myUsers.get(1).getId());
+        friendRepository.insert(user.getId(), myUsers.get(1).getId());
+        Collection<User> users = userRepository.getMutualFriends(myUsers.getFirst().getId(), user.getId());
         assertEquals(1, users.size());
     }
 
     @Test
     void shouldAddUserFriend() {
         createUsers();
-        userRepository.addUserFriend(myUsers.get(0).getId(), myUsers.get(1).getId());
-        assertEquals(1, userRepository.getUser(myUsers.get(0).getId()).getFriends().size());
-        assertEquals(0, userRepository.getUser(myUsers.get(1).getId()).getFriends().size());
+        friendRepository.insert(myUsers.get(0).getId(), myUsers.get(1).getId());
+        assertEquals(1, userRepository.getUserFriends(myUsers.getFirst().getId()).size());
+        assertEquals(0, userRepository.getUserFriends(myUsers.get(1).getId()).size());
     }
 
     @Test
@@ -142,9 +132,9 @@ class UserRepositoryTest {
     @Test
     void shouldDeleteUserFriend() {
         createUsers();
-        userRepository.addUserFriend(myUsers.get(0).getId(), myUsers.get(1).getId());
-        userRepository.deleteUserFriend(myUsers.get(0).getId(), myUsers.get(1).getId());
-        assertEquals(0, userRepository.getUser(myUsers.get(0).getId()).getFriends().size());
-        assertEquals(0, userRepository.getUser(myUsers.get(1).getId()).getFriends().size());
+        friendRepository.insert(myUsers.getFirst().getId(), myUsers.get(1).getId());
+        friendRepository.delete(myUsers.getFirst().getId(), myUsers.get(1).getId());
+        assertEquals(0, userRepository.getUserFriends(myUsers.getFirst().getId()).size());
+        assertEquals(0, userRepository.getUserFriends(myUsers.get(1).getId()).size());
     }
 }

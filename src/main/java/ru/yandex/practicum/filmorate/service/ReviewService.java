@@ -36,16 +36,22 @@ public class ReviewService {
 
     public Review create(Review review) {
         log.debug("create review {}", review);
-        notNull(filmStorage.getFilm(review.getFilmId()));
-        notNull(userStorage.getUser(review.getUserId()));
-        review.setReviewId(reviewRepository.create(review));
-        return review;
+        notNull(filmStorage.getFilm(review.filmId()));
+        notNull(userStorage.getUser(review.userId()));
+        return new Review(
+                reviewRepository.create(review),
+                review.content(),
+                review.isPositive(),
+                review.userId(),
+                review.filmId(),
+                review.useful()
+        );
     }
 
     public Review update(Review review) {
         log.debug("update review {}", review);
         reviewRepository.update(review);
-        return notNull(reviewRepository.findOneById(review.getReviewId()));
+        return notNull(reviewRepository.findOneById(review.reviewId()));
     }
 
     public void delete(long id) {
