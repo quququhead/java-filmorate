@@ -59,19 +59,19 @@ public class ReviewRepository extends BaseRepository<Review> {
     public long create(Review review) {
         return insert(
                 INSERT_QUERY,
-                review.getContent(),
-                review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId()
+                review.content(),
+                review.isPositive(),
+                review.userId(),
+                review.filmId()
         );
     }
 
     public void update(Review review) {
         update(
                 UPDATE_QUERY,
-                review.getContent(),
-                review.getIsPositive(),
-                review.getReviewId()
+                review.content(),
+                review.isPositive(),
+                review.reviewId()
         );
     }
 

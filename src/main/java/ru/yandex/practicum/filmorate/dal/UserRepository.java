@@ -49,6 +49,7 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     public Collection<User> getMutualFriends(long userId, long otherUserId) {
         return findMany(USER_MUTUAL_FRIENDS_QUERY, userId, otherUserId);
     }
+
     @Override
     public long addUser(User user) {
         return insert(
