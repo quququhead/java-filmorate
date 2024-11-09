@@ -52,12 +52,12 @@ public class FilmService {
 
     public void setLike(long id, long userId) {
         userStorage.getUser(userId);
-        likeRepository.addLikeToFilm(id, userId);
+        likeRepository.insert(id, userId);
     }
 
     public void deleteLike(long id, long userId) {
         userStorage.getUser(userId);
-        likeRepository.deleteLikeFromFilm(id, userId);
+        likeRepository.delete(id, userId);
     }
 
     private void checkFilmNotNull(Film film) {

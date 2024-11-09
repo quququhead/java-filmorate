@@ -5,8 +5,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.interfaces.BaseInsertDeleteRepository;
 
 @Repository
-public class FriendRepository extends BaseInsertDeleteRepository {
-    public FriendRepository(JdbcTemplate jdbc) {
-        super(jdbc, "friends", "user_id", "friend_id");
+public class ReviewDislikeRepository extends BaseInsertDeleteRepository {
+    public ReviewDislikeRepository(JdbcTemplate jdbc) {
+        super(jdbc, "reviews_dislikes", "review_id", "user_id");
     }
 }

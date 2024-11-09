@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.interfaces.BaseRepository;
 import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -48,6 +49,7 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     public Collection<User> getMutualFriends(long userId, long otherUserId) {
         return findMany(USER_MUTUAL_FRIENDS_QUERY, userId, otherUserId);
     }
+
     @Override
     public long addUser(User user) {
         return insert(
