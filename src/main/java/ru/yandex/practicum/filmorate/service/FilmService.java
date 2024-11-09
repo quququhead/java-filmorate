@@ -86,6 +86,12 @@ public class FilmService {
         return film;
     }
 
+    public Collection<Film> getRecommendedFilms(long userId) {
+        List<Long> usersId = userStorage.getUsersIdWithSimilarLikes(userId);
+        if (usersId.isEmpty()) throw new NoSuchElementException("Пользователи со схожими лайками не найдены");
+        return prepare(filmStorage.getRecommendedFilms(userId, usersId));
+    }
+
     private List<Film> prepare(Collection<Film> films) {
         if (films.isEmpty()) {
             return Collections.emptyList();

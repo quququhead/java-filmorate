@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dal.interfaces;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface FilmStorage {
     Collection<Film> getAllFilms();
@@ -14,4 +15,6 @@ public interface FilmStorage {
     long addFilm(Film film);
 
     Film updateFilm(Film newFilm);
+
+    Collection<Film> getRecommendedFilms(long userId, List<Long> usersId);
 }

@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
@@ -19,6 +21,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String INSERT_QUERY = "INSERT INTO films(film_name, description, release_date, duration, rating_mpa_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET film_name = ?, description = ?, release_date = ?," +
             " duration = ?, rating_mpa_id = ? WHERE film_id = ?";
+    private static final String FIND_RECOMMENDED_FILMS = "SELECT DISTINCT f.* FROM films f INNER JOIN likes l " +
+            "ON f.film_id = l.film_id WHERE l.film_id NOT IN (SELECT film_id FROM likes  WHERE user_id = ?) " +
+            "AND l.user_id IN (%s)";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -63,5 +68,17 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 newFilm.getId()
         );
         return newFilm;
+    }
+
+    @Override
+    public Collection<Film> getRecommendedFilms(long userId, List<Long> usersId) {
+        String inSql = String.join(",", Collections.nCopies(usersId.size(), "?"));
+        usersId.addFirst(userId);
+        List<Film> result = jdbc.query(
+                String.format(FIND_RECOMMENDED_FILMS, inSql),
+                usersId.toArray(),
+                mapper
+        );
+        return result;
     }
 }

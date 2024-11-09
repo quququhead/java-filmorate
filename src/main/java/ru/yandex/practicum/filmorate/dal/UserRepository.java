@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 @Primary
@@ -25,6 +26,9 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET user_name = ?, login = ?, email = ?," +
             " birthday_date = ? WHERE user_id = ?";
+    private static final String GET_USERS_ID_WITH_SIMILAR_LIKES = "SELECT user_id FROM likes " +
+            "WHERE film_id IN (SELECT film_id FROM likes  WHERE user_id = ?) " +
+            "AND user_id != ? GROUP BY user_id ORDER BY COUNT(film_id) DESC LIMIT ?";
 
     public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -72,5 +76,10 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
                 newUser.getId()
         );
         return newUser;
+    }
+
+    @Override
+    public List<Long> getUsersIdWithSimilarLikes(long userId) {
+        return jdbc.queryForList(GET_USERS_ID_WITH_SIMILAR_LIKES, Long.TYPE, userId, userId, 1);
     }
 }
