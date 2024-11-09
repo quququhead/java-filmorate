@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.dal.FeedRepository;
 import ru.yandex.practicum.filmorate.dal.FriendRepository;
 import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
@@ -21,6 +22,7 @@ public class UserService {
     private final UserStorage userStorage;
     private final FriendRepository friendRepository;
     private final FeedRepository feedRepository;
+    private final FilmService filmService;
 
     public List<Feed> getFeed(long userId) {
         return feedRepository.findAllBy(notNull(userStorage.getUser(userId)).getId());
@@ -43,6 +45,10 @@ public class UserService {
 
     public User findUser(long userId) {
         return notNull(userStorage.getUser(userId));
+    }
+
+    public Collection<Film> getRecommendedFilms(long userId) {
+        return filmService.getRecommendedFilms(userId);
     }
 
     public User createUser(User user) {

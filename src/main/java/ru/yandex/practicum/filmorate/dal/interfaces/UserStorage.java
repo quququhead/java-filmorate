@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dal.interfaces;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface UserStorage {
     Collection<User> getAllUsers();
@@ -17,6 +16,4 @@ public interface UserStorage {
     long addUser(User user);
 
     User updateUser(User newUser);
-
-    List<Long> getUsersIdWithSimilarLikes(long userId);
 }

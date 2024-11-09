@@ -4,10 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -19,7 +18,6 @@ import java.util.List;
 @Validated
 public class UserController {
     private final UserService userService;
-    private final FilmService filmService;
 
     @GetMapping("/{id}/feed")
     public List<Feed> feed(@PathVariable long id) {
@@ -68,6 +66,6 @@ public class UserController {
 
     @GetMapping("/{id}/recommendations")
     public Collection<Film> getRecommendedFilms(@PathVariable long id) {
-        return filmService.getRecommendedFilms(id);
+        return userService.getRecommendedFilms(id);
     }
 }

@@ -35,6 +35,10 @@ public class FilmService {
         return prepare(notNull(filmStorage.getFilm(filmId)));
     }
 
+    public Collection<Film> getRecommendedFilms(long userId) {
+        return prepare(filmStorage.getRecommendedFilms(userId));
+    }
+
     public Film createFilm(Film film) {
         film.setId(filmStorage.addFilm(film));
         return process(film);
@@ -84,12 +88,6 @@ public class FilmService {
         film.setGenres(new LinkedHashSet<>(genreRepository.getAllGenresByFilmId(film.getId())));
         film.getMpa().setName(mpaRepository.getMpa(film.getMpa().getId()).getName());
         return film;
-    }
-
-    public Collection<Film> getRecommendedFilms(long userId) {
-        List<Long> usersId = userStorage.getUsersIdWithSimilarLikes(userId);
-        if (usersId.isEmpty()) throw new NoSuchElementException("Пользователи со схожими лайками не найдены");
-        return prepare(filmStorage.getRecommendedFilms(userId, usersId));
     }
 
     private List<Film> prepare(Collection<Film> films) {
