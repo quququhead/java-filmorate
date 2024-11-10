@@ -19,6 +19,11 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String INSERT_QUERY = "INSERT INTO films(film_name, description, release_date, duration, rating_mpa_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET film_name = ?, description = ?, release_date = ?," +
             " duration = ?, rating_mpa_id = ? WHERE film_id = ?";
+    private static final String FIND_RECOMMENDED_FILMS = "SELECT DISTINCT f.* FROM films f JOIN likes l1 ON f.film_id = l1.film_id" +
+            " LEFT JOIN likes l2 ON l1.film_id = l2.film_id AND l2.user_id = ? WHERE l2.film_id IS NULL" +
+            " AND l1.user_id = (SELECT l1.user_id FROM likes l1 JOIN likes l2 ON l1.film_id = l2.film_id" +
+            " WHERE l1.user_id <> ? AND l2.user_id = ? GROUP BY l1.user_id" +
+            " ORDER BY COUNT(l1.film_id) DESC LIMIT 1)";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -63,5 +68,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 newFilm.getId()
         );
         return newFilm;
+    }
+
+    @Override
+    public Collection<Film> getRecommendedFilms(long userId) {
+        return findMany(FIND_RECOMMENDED_FILMS, userId, userId, userId);
     }
 }

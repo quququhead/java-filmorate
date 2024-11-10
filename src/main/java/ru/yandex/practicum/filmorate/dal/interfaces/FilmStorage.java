@@ -14,4 +14,6 @@ public interface FilmStorage {
     long addFilm(Film film);
 
     Film updateFilm(Film newFilm);
+
+    Collection<Film> getRecommendedFilms(long userId);
 }
