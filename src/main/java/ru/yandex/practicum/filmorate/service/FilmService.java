@@ -27,7 +27,16 @@ public class FilmService {
         return prepare(filmStorage.getAllFilms());
     }
 
-    public Collection<Film> findTopFilms(Integer count) {
+    public Collection<Film> findTopFilms(Integer genreId, Integer year, Integer count) {
+        if (genreId != null && year != null) {
+            return prepare(filmStorage.getAllFilmsBy(genreId, year, count));
+        }
+        if (genreId != null) {
+            return prepare(filmStorage.getAllFilmsByGenreId(genreId, count));
+        }
+        if (year != null) {
+            return prepare(filmStorage.getAllFilmsByYearRelease(year, count));
+        }
         return prepare(filmStorage.getAllFilmsBy(count));
     }
 
