@@ -44,10 +44,6 @@ public class FilmService {
         return prepare(notNull(filmStorage.getFilm(filmId)));
     }
 
-    public Collection<Film> getRecommendedFilms(long userId) {
-        return prepare(filmStorage.getRecommendedFilms(userId));
-    }
-
     public Film createFilm(Film film) {
         film.setId(filmStorage.addFilm(film));
         return process(film);
