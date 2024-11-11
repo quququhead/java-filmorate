@@ -71,7 +71,11 @@ public class FilmService {
         feedRepository.create(new Feed(userId, EventType.LIKE, Operation.REMOVE, id, Instant.now().toEpochMilli()));
     }
 
-
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        notNull(userStorage.getUser(userId));
+        notNull(userStorage.getUser(friendId));
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 
     private void notNull(User user) {
         if (user == null) {
