@@ -71,6 +71,8 @@ public class FilmService {
         feedRepository.create(new Feed(userId, EventType.LIKE, Operation.REMOVE, id, Instant.now().toEpochMilli()));
     }
 
+
+
     private void notNull(User user) {
         if (user == null) {
             throw new NoSuchElementException("Юзер не найден");

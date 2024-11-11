@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Collection;
 
 @Repository
@@ -33,6 +34,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " AND l1.user_id = (SELECT l1.user_id FROM likes l1 JOIN likes l2 ON l1.film_id = l2.film_id" +
             " WHERE l1.user_id <> ? AND l2.user_id = ? GROUP BY l1.user_id" +
             " ORDER BY COUNT(l1.film_id) DESC LIMIT 1)";
+
+    private static final String FIND_COMMON_FILMS = "SELECT f.* FROM films AS f LEFT JOIN likes AS l ON f.film.id = l.film_id WHERE l.film_id in (SELECT film_id FROM likes WHERE user_id = ?) AND (SELECT film_id FROM likes WHERE user_id = ?) GROUP BY l.film_id";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -97,5 +100,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> getRecommendedFilms(long userId) {
         return findMany(FIND_RECOMMENDED_FILMS, userId, userId, userId);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(FIND_COMMON_FILMS, userId, friendId);
     }
 }
