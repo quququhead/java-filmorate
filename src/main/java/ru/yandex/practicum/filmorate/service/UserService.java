@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FeedRepository;
 import ru.yandex.practicum.filmorate.dal.FriendRepository;
+import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -22,7 +23,7 @@ public class UserService {
     private final UserStorage userStorage;
     private final FriendRepository friendRepository;
     private final FeedRepository feedRepository;
-    private final FilmService filmService;
+    private final FilmStorage filmStorage;
 
     public List<Feed> getFeed(long userId) {
         return feedRepository.findAllBy(notNull(userStorage.getUser(userId)).getId());
@@ -48,7 +49,7 @@ public class UserService {
     }
 
     public Collection<Film> getRecommendedFilms(long userId) {
-        return filmService.getRecommendedFilms(userId);
+        return filmStorage.getRecommendedFilms(userId);
     }
 
     public User createUser(User user) {
