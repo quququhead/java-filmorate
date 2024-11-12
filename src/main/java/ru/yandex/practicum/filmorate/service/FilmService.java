@@ -59,7 +59,7 @@ public class FilmService {
         return process(filmStorage.updateFilm(newFilm));
     }
 
-    public void deleteFilm(Integer filmId){
+    public void deleteFilm(long filmId) {
         filmStorage.deleteFilm(filmId);
     }
 
