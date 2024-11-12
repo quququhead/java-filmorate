@@ -28,6 +28,6 @@ public class FilmDirectorRepository extends BaseRepository<FilmDirector> {
     }
 
     public void deleteDirectorsFromFilm(long filmId) {
-        update(DELETE_ALL_FROM_FILM_QUERY, filmId);
+        delete(DELETE_ALL_FROM_FILM_QUERY, filmId);
     }
 }
