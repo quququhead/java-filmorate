@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.Collection;
 
 @Repository
