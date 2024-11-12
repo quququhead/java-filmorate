@@ -77,7 +77,7 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     }
 
     @Override
-    public void deleteUser(Integer userId){
+    public void deleteUser(long userId) {
         delete(DELETE_USER_QUERY, userId);
     }
 }

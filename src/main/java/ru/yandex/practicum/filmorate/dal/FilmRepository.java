@@ -103,7 +103,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     @Override
-    public void deleteFilm(Integer filmId){
+    public void deleteFilm(long filmId) {
         delete(DELETE_FILM_QUERY, filmId);
     }
 

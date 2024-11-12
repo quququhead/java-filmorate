@@ -61,7 +61,7 @@ public class UserService {
         return userStorage.updateUser(newUser);
     }
 
-    public void deleteUser(Integer userId){
+    public void deleteUser(long userId) {
         userStorage.deleteUser(userId);
     }
 

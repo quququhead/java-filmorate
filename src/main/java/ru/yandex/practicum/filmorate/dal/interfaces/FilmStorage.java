@@ -20,7 +20,8 @@ public interface FilmStorage {
     long addFilm(Film film);
 
     Film updateFilm(Film newFilm);
-    void deleteFilm(Integer id);
+
+    void deleteFilm(long id);
 
     Collection<Film> getRecommendedFilms(long userId);
 

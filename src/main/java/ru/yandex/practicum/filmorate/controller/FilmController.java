@@ -50,7 +50,7 @@ public class FilmController {
     }
 
     @DeleteMapping("/{filmId}")
-    public void deleteFilm(@PathVariable Integer filmId){
+    public void deleteFilm(@PathVariable long filmId) {
         filmService.deleteFilm(filmId);
     }
 
