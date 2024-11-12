@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS friends;
 DROP TABLE IF EXISTS film_genres;
+DROP TABLE IF EXISTS film_directors;
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS reviews_likes;
 DROP TABLE IF EXISTS reviews_dislikes;
@@ -7,6 +8,7 @@ DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS films;
 DROP TABLE IF EXISTS rating_mpas;
 DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS directors;
 DROP TABLE IF EXISTS feed;
 DROP TABLE IF EXISTS users;
 
@@ -50,6 +52,16 @@ CREATE TABLE IF NOT EXISTS genres (
 CREATE TABLE IF NOT EXISTS film_genres (
     film_id BIGINT REFERENCES films (film_id) ON DELETE CASCADE,
     genre_id BIGINT REFERENCES genres (genre_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS directors (
+    director_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    director_name varchar(40) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_directors (
+    film_id BIGINT REFERENCES films (film_id) ON DELETE CASCADE,
+    director_id BIGINT REFERENCES directors (director_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
