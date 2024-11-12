@@ -36,9 +36,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         " ORDER BY COUNT(l1.film_id) DESC LIMIT 1)";
 
     private static final String FIND_COMMON_FILMS = "SELECT f.* FROM films AS f LEFT JOIN likes AS l ON f.film_id = l.film_id" +
-        " WHERE l.film_id in (SELECT film_id FROM likes WHERE user_id = ?)" +
-        " AND (SELECT film_id FROM likes WHERE user_id = ?)" +
-        " GROUP BY l.film_id";
+        " WHERE l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
+        " AND l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
+        " GROUP BY l.film_id" +
+        " ORDER BY COUNT(l.user_id) DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
