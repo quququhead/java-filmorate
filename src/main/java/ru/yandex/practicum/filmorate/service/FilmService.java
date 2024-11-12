@@ -74,7 +74,7 @@ public class FilmService {
     public Collection<Film> getCommonFilms(long userId, long friendId) {
         notNull(userStorage.getUser(userId));
         notNull(userStorage.getUser(friendId));
-        return filmStorage.getCommonFilms(userId, friendId);
+        return prepare(filmStorage.getCommonFilms(userId, friendId));
     }
 
     private void notNull(User user) {
