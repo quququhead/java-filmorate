@@ -35,7 +35,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " ORDER BY COUNT(l1.film_id) DESC LIMIT 1)";
     private static final String FIND_ALL_OF_DIRECTOR_SORTED_BY_YEAR_QUERY = "SELECT f.* FROM films AS f " +
             "WHERE f.film_id IN (SELECT fd.film_id FROM film_directors AS fd WHERE fd.director_id = ?) " +
-            "ORDER BY EXTRACT(YEAR FROM f.release_date) DESC";
+            "ORDER BY EXTRACT(YEAR FROM f.release_date) ASC";
     private static final String FIND_ALL_OF_DIRECTOR_SORTED_BY_LIKES_QUERY = "SELECT f.* FROM films AS f " +
             "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
             "WHERE l.film_id IN (SELECT film_id FROM film_directors WHERE director_id = ?) " +
