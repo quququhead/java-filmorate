@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.model.enums.SortingMethod;
 
 import java.time.Instant;
 import java.util.*;
@@ -22,9 +23,15 @@ public class FilmService {
     private final LikeRepository likeRepository;
     private final MpaRepository mpaRepository;
     private final FeedRepository feedRepository;
+    private final FilmDirectorRepository filmDirectorRepository;
+    private final DirectorRepository directorRepository;
 
     public Collection<Film> findAllFilms() {
         return prepare(filmStorage.getAllFilms());
+    }
+
+    public Film findFilm(long filmId) {
+        return prepare(notNull(filmStorage.getFilm(filmId)));
     }
 
     public Collection<Film> findTopFilms(Integer genreId, Integer year, Integer count) {
@@ -40,8 +47,12 @@ public class FilmService {
         return prepare(filmStorage.getAllFilmsBy(count));
     }
 
-    public Film findFilm(long filmId) {
-        return prepare(notNull(filmStorage.getFilm(filmId)));
+    public Collection<Film> findAllFilmsOfDirectorId(long directorId, String sortBy) {
+        SortingMethod sortingMethod = SortingMethod.valueOf(sortBy.toUpperCase());
+        return switch (sortingMethod) {
+            case YEAR -> prepare(filmStorage.getAllFilmsOfDirectorSortedByYear(directorId));
+            case LIKES -> prepare(filmStorage.getAllFilmsOfDirectorSortedByLikes(directorId));
+        };
     }
 
     public Film createFilm(Film film) {
@@ -52,6 +63,7 @@ public class FilmService {
     public Film updateFilm(Film newFilm) {
         notNull(filmStorage.getFilm(newFilm.getId()));
         filmGenreRepository.deleteGenresFromFilm(newFilm.getId());
+        filmDirectorRepository.deleteDirectorsFromFilm(newFilm.getId());
         return process(filmStorage.updateFilm(newFilm));
     }
 
@@ -96,11 +108,17 @@ public class FilmService {
                     .map(genre -> new Object[]{film.getId(), genre.getId()})
                     .toList());
         }
+        if (Objects.nonNull(film.getDirectors())) {
+            filmDirectorRepository.addDirectorsToFilm(film.getDirectors().stream()
+                    .map(director -> new Object[]{film.getId(), director.getId()})
+                    .toList());
+        }
         return prepare(film);
     }
 
     private Film prepare(Film film) {
         film.setGenres(new LinkedHashSet<>(genreRepository.getAllGenresByFilmId(film.getId())));
+        film.setDirectors(new LinkedHashSet<>(directorRepository.getAllDirectorsByFilmId(film.getId())));
         film.getMpa().setName(mpaRepository.getMpa(film.getMpa().getId()).getName());
         return film;
     }
@@ -112,6 +130,8 @@ public class FilmService {
 
         Collection<FilmGenre> filmGenres = filmGenreRepository.getAllGenres();
         Collection<Genre> genres = genreRepository.getAllGenres();
+        Collection<FilmDirector> filmDirectors = filmDirectorRepository.getAllDirectors();
+        Collection<Director> directors = directorRepository.getAllDirectors();
         Collection<Mpa> mpas = mpaRepository.getAllMpas();
 
         return films.stream()
@@ -122,6 +142,15 @@ public class FilmService {
                                     .id(filmGenre.getGenreId())
                                     .name(genres.stream()
                                             .filter(genre -> genre.getId() == filmGenre.getGenreId())
+                                            .findFirst().orElseThrow().getName())
+                                    .build())
+                            .toList());
+                    film.getDirectors().addAll(filmDirectors.stream()
+                            .filter(filmDirector -> film.getId() == filmDirector.getFilmId())
+                            .map(filmDirector -> Director.builder()
+                                    .id(filmDirector.getDirectorId())
+                                    .name(directors.stream()
+                                            .filter(director -> director.getId() == filmDirector.getDirectorId())
                                             .findFirst().orElseThrow().getName())
                                     .build())
                             .toList());
