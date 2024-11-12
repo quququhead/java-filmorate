@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -33,6 +34,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " AND l1.user_id = (SELECT l1.user_id FROM likes l1 JOIN likes l2 ON l1.film_id = l2.film_id" +
             " WHERE l1.user_id <> ? AND l2.user_id = ? GROUP BY l1.user_id" +
             " ORDER BY COUNT(l1.film_id) DESC LIMIT 1)";
+
+    private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -93,6 +96,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         );
         return newFilm;
     }
+
+    @Override
+    public void deleteFilm(Integer filmId){
+        delete(DELETE_FILM_QUERY, filmId);
+    }
+
 
     @Override
     public Collection<Film> getRecommendedFilms(long userId) {
