@@ -21,6 +21,8 @@ public interface FilmStorage {
 
     Film updateFilm(Film newFilm);
 
+    void deleteFilm(long id);
+
     Collection<Film> getRecommendedFilms(long userId);
 
     Collection<Film> getCommonFilms(long userId, long friendId);

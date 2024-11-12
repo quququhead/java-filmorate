@@ -55,6 +55,10 @@ public class FilmService {
         return process(filmStorage.updateFilm(newFilm));
     }
 
+    public void deleteFilm(long filmId) {
+        filmStorage.deleteFilm(filmId);
+    }
+
     public void setLike(long id, long userId) {
         notNull(userStorage.getUser(userId));
         likeRepository.insert(id, userId);

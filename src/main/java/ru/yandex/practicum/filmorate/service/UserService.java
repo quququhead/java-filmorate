@@ -61,6 +61,10 @@ public class UserService {
         return userStorage.updateUser(newUser);
     }
 
+    public void deleteUser(long userId) {
+        userStorage.deleteUser(userId);
+    }
+
     public void addFriend(long userId, long friendId) {
         notNull(userStorage.getUser(userId));
         notNull(userStorage.getUser(friendId));

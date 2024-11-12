@@ -26,6 +26,8 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     private static final String UPDATE_QUERY = "UPDATE users SET user_name = ?, login = ?, email = ?," +
             " birthday_date = ? WHERE user_id = ?";
 
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
+
     public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
@@ -72,5 +74,10 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
                 newUser.getId()
         );
         return newUser;
+    }
+
+    @Override
+    public void deleteUser(long userId) {
+        delete(DELETE_USER_QUERY, userId);
     }
 }

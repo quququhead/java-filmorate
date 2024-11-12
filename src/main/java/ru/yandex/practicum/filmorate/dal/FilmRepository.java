@@ -40,6 +40,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " GROUP BY l.film_id" +
             " ORDER BY COUNT(l.user_id) DESC";
 
+    private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
+
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
@@ -99,6 +101,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         );
         return newFilm;
     }
+
+    @Override
+    public void deleteFilm(long filmId) {
+        delete(DELETE_FILM_QUERY, filmId);
+    }
+
 
     @Override
     public Collection<Film> getRecommendedFilms(long userId) {
