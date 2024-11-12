@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
