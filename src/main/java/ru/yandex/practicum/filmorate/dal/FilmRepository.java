@@ -34,6 +34,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " WHERE l1.user_id <> ? AND l2.user_id = ? GROUP BY l1.user_id" +
             " ORDER BY COUNT(l1.film_id) DESC LIMIT 1)";
 
+    private static final String FIND_COMMON_FILMS = "SELECT f.* FROM films AS f LEFT JOIN likes AS l ON f.film_id = l.film_id" +
+            " WHERE l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
+            " AND l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
+            " GROUP BY l.film_id" +
+            " ORDER BY COUNT(l.user_id) DESC";
+
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
@@ -71,25 +77,25 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public long addFilm(Film film) {
         return insert(
-                INSERT_QUERY,
-                film.getName(),
-                film.getDescription(),
-                Date.valueOf(film.getReleaseDate()),
-                film.getDuration(),
-                film.getMpa().getId()
+            INSERT_QUERY,
+            film.getName(),
+            film.getDescription(),
+            Date.valueOf(film.getReleaseDate()),
+            film.getDuration(),
+            film.getMpa().getId()
         );
     }
 
     @Override
     public Film updateFilm(Film newFilm) {
         update(
-                UPDATE_QUERY,
-                newFilm.getName(),
-                newFilm.getDescription(),
-                Date.valueOf(newFilm.getReleaseDate()),
-                newFilm.getDuration(),
-                newFilm.getMpa().getId(),
-                newFilm.getId()
+            UPDATE_QUERY,
+            newFilm.getName(),
+            newFilm.getDescription(),
+            Date.valueOf(newFilm.getReleaseDate()),
+            newFilm.getDuration(),
+            newFilm.getMpa().getId(),
+            newFilm.getId()
         );
         return newFilm;
     }
@@ -97,5 +103,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> getRecommendedFilms(long userId) {
         return findMany(FIND_RECOMMENDED_FILMS, userId, userId, userId);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(FIND_COMMON_FILMS, userId, friendId);
     }
 }
