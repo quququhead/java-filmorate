@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.model.enums.SearchingMethod;
 import ru.yandex.practicum.filmorate.model.enums.SortingMethod;
 
 import java.time.Instant;
@@ -53,6 +54,23 @@ public class FilmService {
             case YEAR -> prepare(filmStorage.getAllFilmsOfDirectorSortedByYear(directorId));
             case LIKES -> prepare(filmStorage.getAllFilmsOfDirectorSortedByLikes(directorId));
         };
+    }
+
+    public Collection<Film> findAllFilmsBySearch(String query, List<String> by) {
+        List<SearchingMethod> searchingMethods = by.stream()
+                .map(String::toUpperCase)
+                .map(SearchingMethod::valueOf)
+                .toList();
+        if (searchingMethods.contains(SearchingMethod.DIRECTOR) && searchingMethods.contains(SearchingMethod.TITLE)) {
+            return prepare(filmStorage.getAllFilmsBySearchingOfDirectorAndTitle(query));
+        }
+        if (searchingMethods.contains(SearchingMethod.DIRECTOR)) {
+            return prepare(filmStorage.getAllFilmsBySearchingOfDirector(query));
+        }
+        if (searchingMethods.contains(SearchingMethod.TITLE)) {
+            return prepare(filmStorage.getAllFilmsBySearchingOfTitle(query));
+        }
+        throw new NoSuchElementException("Способ поиска не найден");
     }
 
     public Film createFilm(Film film) {

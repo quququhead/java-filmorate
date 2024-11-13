@@ -40,14 +40,20 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
             "WHERE l.film_id IN (SELECT film_id FROM film_directors WHERE director_id = ?) " +
             "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC";
-
     private static final String FIND_COMMON_FILMS = "SELECT f.* FROM films AS f LEFT JOIN likes AS l ON f.film_id = l.film_id" +
             " WHERE l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
             " AND l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
             " GROUP BY l.film_id" +
             " ORDER BY COUNT(l.user_id) DESC";
-
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
+    private static final String FIND_ALL_OF_BY_DIRECTOR_AND_TITLE_QUERY = "SELECT f.* FROM films AS f " +
+            "WHERE f.film_id IN (SELECT fd.film_id FROM film_directors AS fd " +
+            "WHERE fd.director_id IN (SELECT director_id FROM directors WHERE director_name ILIKE ?))" +
+            "OR f.film_name ILIKE ?";
+    private static final String FIND_ALL_OF_BY_DIRECTOR_QUERY = "SELECT f.* FROM films AS f " +
+            "WHERE f.film_id IN (SELECT fd.film_id FROM film_directors AS fd " +
+            "WHERE fd.director_id IN (SELECT director_id FROM directors WHERE director_name ILIKE ?))";
+    private static final String FIND_ALL_OF_BY_TITLE_QUERY = "SELECT * FROM films WHERE film_name ILIKE ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -86,6 +92,21 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> getAllFilmsOfDirectorSortedByLikes(long directorId) {
         return findMany(FIND_ALL_OF_DIRECTOR_SORTED_BY_LIKES_QUERY, directorId);
+    }
+
+    @Override
+    public Collection<Film> getAllFilmsBySearchingOfDirectorAndTitle(String query) {
+        return findMany(FIND_ALL_OF_BY_DIRECTOR_AND_TITLE_QUERY, prepareQuery(query), prepareQuery(query));
+    }
+
+    @Override
+    public Collection<Film> getAllFilmsBySearchingOfDirector(String query) {
+        return findMany(FIND_ALL_OF_BY_DIRECTOR_QUERY, prepareQuery(query));
+    }
+
+    @Override
+    public Collection<Film> getAllFilmsBySearchingOfTitle(String query) {
+        return findMany(FIND_ALL_OF_BY_TITLE_QUERY, prepareQuery(query));
     }
 
     @Override
@@ -133,5 +154,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> getCommonFilms(long userId, long friendId) {
         return findMany(FIND_COMMON_FILMS, userId, friendId);
+    }
+
+    private String prepareQuery(String query) {
+        return "%" + query + "%";
     }
 }
