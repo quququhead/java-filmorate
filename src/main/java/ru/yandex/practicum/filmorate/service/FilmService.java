@@ -55,6 +55,19 @@ public class FilmService {
         };
     }
 
+    public Collection<Film> findAllFilmsBySearch(String query, List<String> by) {
+        if (by.contains("director") && by.contains("title")) {
+            return prepare(filmStorage.getAllFilmsBySearchingOfDirectorAndTitle(query));
+        }
+        if (by.contains("director")) {
+            return prepare(filmStorage.getAllFilmsBySearchingOfDirector(query));
+        }
+        if (by.contains("title")) {
+            return prepare(filmStorage.getAllFilmsBySearchingOfTitle(query));
+        }
+        throw new NoSuchElementException("Способ поиска не найден");
+    }
+
     public Film createFilm(Film film) {
         film.setId(filmStorage.addFilm(film));
         return process(film);

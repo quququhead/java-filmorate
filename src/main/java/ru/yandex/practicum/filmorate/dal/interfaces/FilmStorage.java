@@ -19,6 +19,12 @@ public interface FilmStorage {
 
     Collection<Film> getAllFilmsOfDirectorSortedByLikes(long directorId);
 
+    Collection<Film> getAllFilmsBySearchingOfDirectorAndTitle(String query);
+
+    Collection<Film> getAllFilmsBySearchingOfDirector(String query);
+
+    Collection<Film> getAllFilmsBySearchingOfTitle(String query);
+
     Film getFilm(long filmId);
 
     long addFilm(Film film);
