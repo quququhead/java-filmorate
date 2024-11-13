@@ -34,6 +34,12 @@ public class FilmController {
         return filmService.findTopFilms(genreId, year, count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> findAllFilmsOfDirectorId(@PathVariable long directorId,
+                                                     @RequestParam String sortBy) {
+        return filmService.findAllFilmsOfDirectorId(directorId, sortBy);
+    }
+
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         return filmService.createFilm(film);

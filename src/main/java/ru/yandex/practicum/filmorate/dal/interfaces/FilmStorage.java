@@ -15,6 +15,10 @@ public interface FilmStorage {
 
     Collection<Film> getAllFilmsByYearRelease(int year, long count);
 
+    Collection<Film> getAllFilmsOfDirectorSortedByYear(long directorId);
+
+    Collection<Film> getAllFilmsOfDirectorSortedByLikes(long directorId);
+
     Film getFilm(long filmId);
 
     long addFilm(Film film);
