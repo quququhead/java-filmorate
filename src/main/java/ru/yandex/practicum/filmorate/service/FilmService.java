@@ -8,10 +8,12 @@ import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.model.enums.SearchingMethod;
 import ru.yandex.practicum.filmorate.model.enums.SortingMethod;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,13 +58,17 @@ public class FilmService {
     }
 
     public Collection<Film> findAllFilmsBySearch(String query, List<String> by) {
-        if (by.contains("director") && by.contains("title")) {
+        List<SearchingMethod> searchingMethods = by.stream()
+                .map(String::toUpperCase)
+                .map(SearchingMethod::valueOf)
+                .toList();
+        if (searchingMethods.contains(SearchingMethod.DIRECTOR) && searchingMethods.contains(SearchingMethod.TITLE)) {
             return prepare(filmStorage.getAllFilmsBySearchingOfDirectorAndTitle(query));
         }
-        if (by.contains("director")) {
+        if (searchingMethods.contains(SearchingMethod.DIRECTOR)) {
             return prepare(filmStorage.getAllFilmsBySearchingOfDirector(query));
         }
-        if (by.contains("title")) {
+        if (searchingMethods.contains(SearchingMethod.TITLE)) {
             return prepare(filmStorage.getAllFilmsBySearchingOfTitle(query));
         }
         throw new NoSuchElementException("Способ поиска не найден");
