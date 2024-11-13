@@ -2,28 +2,31 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FeedRepository;
-import ru.yandex.practicum.filmorate.dal.FriendRepository;
+import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.dal.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.interfaces.UserStorage;
-import ru.yandex.practicum.filmorate.model.Feed;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
+    private final FilmDirectorRepository filmDirectorRepository;
+    private final FilmGenreRepository filmGenreRepository;
+    private final DirectorRepository directorRepository;
     private final FriendRepository friendRepository;
+    private final GenreRepository genreRepository;
     private final FeedRepository feedRepository;
+    private final MpaRepository mpaRepository;
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     public List<Feed> getFeed(long userId) {
         return feedRepository.findAllBy(notNull(userStorage.getUser(userId)).getId());
@@ -49,7 +52,7 @@ public class UserService {
     }
 
     public Collection<Film> getRecommendedFilms(long userId) {
-        return filmStorage.getRecommendedFilms(userId);
+        return prepare(filmStorage.getRecommendedFilms(userId));
     }
 
     public User createUser(User user) {
@@ -84,5 +87,42 @@ public class UserService {
             throw new NoSuchElementException("Пользователь не найден");
         }
         return user;
+    }
+
+    private List<Film> prepare(Collection<Film> films) {
+        if (films.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Collection<FilmGenre> filmGenres = filmGenreRepository.getAllGenres();
+        Collection<Genre> genres = genreRepository.getAllGenres();
+        Collection<FilmDirector> filmDirectors = filmDirectorRepository.getAllDirectors();
+        Collection<Director> directors = directorRepository.getAllDirectors();
+        Collection<Mpa> mpas = mpaRepository.getAllMpas();
+
+        return films.stream()
+                .peek(film -> {
+                    film.getGenres().addAll(filmGenres.stream()
+                            .filter(filmGenre -> film.getId() == filmGenre.getFilmId())
+                            .map(filmGenre -> Genre.builder()
+                                    .id(filmGenre.getGenreId())
+                                    .name(genres.stream()
+                                            .filter(genre -> genre.getId() == filmGenre.getGenreId())
+                                            .findFirst().orElseThrow().getName())
+                                    .build())
+                            .toList());
+                    film.getDirectors().addAll(filmDirectors.stream()
+                            .filter(filmDirector -> film.getId() == filmDirector.getFilmId())
+                            .map(filmDirector -> Director.builder()
+                                    .id(filmDirector.getDirectorId())
+                                    .name(directors.stream()
+                                            .filter(director -> director.getId() == filmDirector.getDirectorId())
+                                            .findFirst().orElseThrow().getName())
+                                    .build())
+                            .toList());
+                    film.getMpa().setName(mpas.stream()
+                            .filter(mpa -> film.getMpa().getId() == mpa.getId())
+                            .findFirst().orElseThrow().getName());
+                }).toList();
     }
 }

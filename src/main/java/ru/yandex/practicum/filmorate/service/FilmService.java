@@ -49,6 +49,7 @@ public class FilmService {
     }
 
     public Collection<Film> findAllFilmsOfDirectorId(long directorId, String sortBy) {
+        notNull(directorRepository.getDirector(directorId));
         SortingMethod sortingMethod = SortingMethod.valueOf(sortBy.toUpperCase());
         return switch (sortingMethod) {
             case YEAR -> prepare(filmStorage.getAllFilmsOfDirectorSortedByYear(directorId));
@@ -118,6 +119,12 @@ public class FilmService {
             throw new NoSuchElementException("Фильм не найден");
         }
         return film;
+    }
+
+    private void notNull(Director director) {
+        if (director == null) {
+            throw new NoSuchElementException("Режиссер не найден");
+        }
     }
 
     private Film process(Film film) {

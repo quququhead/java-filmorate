@@ -38,7 +38,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "ORDER BY EXTRACT(YEAR FROM f.release_date) ASC";
     private static final String FIND_ALL_OF_DIRECTOR_SORTED_BY_LIKES_QUERY = "SELECT f.* FROM films AS f " +
             "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
-            "WHERE l.film_id IN (SELECT film_id FROM film_directors WHERE director_id = ?) " +
+            "WHERE f.film_id IN (SELECT film_id FROM film_directors WHERE director_id = ?) " +
             "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC";
     private static final String FIND_COMMON_FILMS = "SELECT f.* FROM films AS f LEFT JOIN likes AS l ON f.film_id = l.film_id" +
             " WHERE l.film_id IN (SELECT film_id FROM likes WHERE user_id = ?)" +
@@ -47,13 +47,24 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " ORDER BY COUNT(l.user_id) DESC";
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
     private static final String FIND_ALL_OF_BY_DIRECTOR_AND_TITLE_QUERY = "SELECT f.* FROM films AS f " +
-            "WHERE f.film_id IN (SELECT fd.film_id FROM film_directors AS fd " +
-            "WHERE fd.director_id IN (SELECT director_id FROM directors WHERE director_name ILIKE ?))" +
-            "OR f.film_name ILIKE ?";
+            "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
+            "LEFT JOIN film_directors AS fd ON fd.film_id = f.film_id " +
+            "LEFT JOIN directors AS d ON d.director_id = fd.director_id " +
+            "WHERE d.director_name ILIKE ? OR f.film_name ILIKE ? " +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(l.user_id) DESC";
     private static final String FIND_ALL_OF_BY_DIRECTOR_QUERY = "SELECT f.* FROM films AS f " +
-            "WHERE f.film_id IN (SELECT fd.film_id FROM film_directors AS fd " +
-            "WHERE fd.director_id IN (SELECT director_id FROM directors WHERE director_name ILIKE ?))";
-    private static final String FIND_ALL_OF_BY_TITLE_QUERY = "SELECT * FROM films WHERE film_name ILIKE ?";
+            "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
+            "LEFT JOIN film_directors AS fd ON fd.film_id = f.film_id " +
+            "LEFT JOIN directors AS d ON d.director_id = fd.director_id " +
+            "WHERE d.director_name ILIKE ? " +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(l.user_id) DESC";
+    private static final String FIND_ALL_OF_BY_TITLE_QUERY = "SELECT f.* FROM films AS f " +
+            "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
+            "WHERE f.film_name ILIKE ? " +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(l.user_id) DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -67,6 +78,16 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> getAllFilmsBy(long count) {
         return findMany(FIND_MOST_POPULAR_QUERY, count);
+    }
+
+    @Override
+    public Collection<Film> getRecommendedFilms(long userId) {
+        return findMany(FIND_RECOMMENDED_FILMS, userId, userId, userId);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(FIND_COMMON_FILMS, userId, friendId);
     }
 
     @Override
@@ -143,17 +164,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public void deleteFilm(long filmId) {
         delete(DELETE_FILM_QUERY, filmId);
-    }
-
-
-    @Override
-    public Collection<Film> getRecommendedFilms(long userId) {
-        return findMany(FIND_RECOMMENDED_FILMS, userId, userId, userId);
-    }
-
-    @Override
-    public Collection<Film> getCommonFilms(long userId, long friendId) {
-        return findMany(FIND_COMMON_FILMS, userId, friendId);
     }
 
     private String prepareQuery(String query) {
