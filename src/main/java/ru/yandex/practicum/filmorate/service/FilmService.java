@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.enums.SortingMethod;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
