@@ -32,7 +32,7 @@ public class FilmService {
     }
 
     public Film findFilm(long filmId) {
-        return prepare(notNull(filmStorage.getFilm(filmId)));
+        return prepare(getFilmNotNull(filmId));
     }
 
     public Collection<Film> findTopFilms(Integer genreId, Integer year, Integer count) {
@@ -49,7 +49,7 @@ public class FilmService {
     }
 
     public Collection<Film> findAllFilmsOfDirectorId(long directorId, String sortBy) {
-        notNull(directorRepository.getDirector(directorId));
+        getDirectorNotNull(directorId);
         SortingMethod sortingMethod = SortingMethod.valueOf(sortBy.toUpperCase());
         return switch (sortingMethod) {
             case YEAR -> prepare(filmStorage.getAllFilmsOfDirectorSortedByYear(directorId));
@@ -58,9 +58,12 @@ public class FilmService {
     }
 
     public Collection<Film> findAllFilmsBySearch(String query, List<String> by) {
+        if (query.isBlank()) {
+            return Collections.emptyList();
+        }
         List<SearchingMethod> searchingMethods = by.stream()
                 .map(String::toUpperCase)
-                .map(SearchingMethod::valueOf)
+                .map(SearchingMethod::searchBy)
                 .toList();
         if (searchingMethods.contains(SearchingMethod.DIRECTOR) && searchingMethods.contains(SearchingMethod.TITLE)) {
             return prepare(filmStorage.getAllFilmsBySearchingOfDirectorAndTitle(query));
@@ -80,7 +83,7 @@ public class FilmService {
     }
 
     public Film updateFilm(Film newFilm) {
-        notNull(filmStorage.getFilm(newFilm.getId()));
+        getFilmNotNull(newFilm.getId());
         filmGenreRepository.deleteGenresFromFilm(newFilm.getId());
         filmDirectorRepository.deleteDirectorsFromFilm(newFilm.getId());
         return process(filmStorage.updateFilm(newFilm));
@@ -91,39 +94,42 @@ public class FilmService {
     }
 
     public void setLike(long id, long userId) {
-        notNull(userStorage.getUser(userId));
+        getUserNotNull(userId);
         likeRepository.insert(id, userId);
         feedRepository.create(new Feed(userId, EventType.LIKE, Operation.ADD, id, Instant.now().toEpochMilli()));
     }
 
     public void deleteLike(long id, long userId) {
-        notNull(userStorage.getUser(userId));
+        getUserNotNull(userId);
         likeRepository.delete(id, userId);
         feedRepository.create(new Feed(userId, EventType.LIKE, Operation.REMOVE, id, Instant.now().toEpochMilli()));
     }
 
     public Collection<Film> getCommonFilms(long userId, long friendId) {
-        notNull(userStorage.getUser(userId));
-        notNull(userStorage.getUser(friendId));
+        getUserNotNull(userId);
+        getUserNotNull(friendId);
         return prepare(filmStorage.getCommonFilms(userId, friendId));
     }
 
-    private void notNull(User user) {
+    private void getUserNotNull(long userId) {
+        User user = userStorage.getUser(userId);
         if (user == null) {
-            throw new NoSuchElementException("Юзер не найден");
+            throw new NoSuchElementException(String.format("Юзер с id {%s} не найден", userId));
         }
     }
 
-    private Film notNull(Film film) {
+    private Film getFilmNotNull(long filmId) {
+        Film film = filmStorage.getFilm(filmId);
         if (film == null) {
-            throw new NoSuchElementException("Фильм не найден");
+            throw new NoSuchElementException(String.format("Фильм с id {%s} не найден", filmId));
         }
         return film;
     }
 
-    private void notNull(Director director) {
+    private void getDirectorNotNull(long directorId) {
+        Director director = directorRepository.getDirector(directorId);
         if (director == null) {
-            throw new NoSuchElementException("Режиссер не найден");
+            throw new NoSuchElementException(String.format("Режиссер с id {%s} не найден", directorId));
         }
     }
 

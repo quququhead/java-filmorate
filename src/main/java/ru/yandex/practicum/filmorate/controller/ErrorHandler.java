@@ -16,13 +16,13 @@ public class ErrorHandler {
             DataIntegrityViolationException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final Exception e) {
-        return new ErrorResponse("Некорректный запрос", e.getMessage());
+    public ErrorResponse handleValidationException(final Exception ignored) {
+        return new ErrorResponse("Некорректный запрос");
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NoSuchElementException e) {
-        return new ErrorResponse("Искомый объект не найден", e.getMessage());
+        return new ErrorResponse(e.getMessage());
     }
 }

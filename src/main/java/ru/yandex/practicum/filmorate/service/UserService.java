@@ -29,7 +29,7 @@ public class UserService {
     private final UserStorage userStorage;
 
     public List<Feed> getFeed(long userId) {
-        return feedRepository.findAllBy(notNull(userStorage.getUser(userId)).getId());
+        return feedRepository.findAllBy(getUserNotNull(userId).getId());
     }
 
     public Collection<User> findAllUsers() {
@@ -37,22 +37,22 @@ public class UserService {
     }
 
     public Collection<User> findUserFriends(long userId) {
-        notNull(userStorage.getUser(userId));
+        getUserNotNull(userId);
         return userStorage.getUserFriends(userId);
     }
 
     public Collection<User> findMutualFriends(long userId, long otherUserId) {
-        notNull(userStorage.getUser(userId));
-        notNull(userStorage.getUser(otherUserId));
+        getUserNotNull(userId);
+        getUserNotNull(otherUserId);
         return userStorage.getMutualFriends(userId, otherUserId);
     }
 
     public User findUser(long userId) {
-        return notNull(userStorage.getUser(userId));
+        return getUserNotNull(userId);
     }
 
     public Collection<Film> getRecommendedFilms(long userId) {
-        return prepare(filmStorage.getRecommendedFilms(userId));
+        return prepare(filmStorage.getRecommendedFilms(getUserNotNull(userId).getId()));
     }
 
     public User createUser(User user) {
@@ -69,22 +69,23 @@ public class UserService {
     }
 
     public void addFriend(long userId, long friendId) {
-        notNull(userStorage.getUser(userId));
-        notNull(userStorage.getUser(friendId));
+        getUserNotNull(userId);
+        getUserNotNull(friendId);
         friendRepository.insert(userId, friendId);
         feedRepository.create(new Feed(userId, EventType.FRIEND, Operation.ADD, friendId, Instant.now().toEpochMilli()));
     }
 
     public void deleteUserFriend(long userId, long friendId) {
-        notNull(userStorage.getUser(userId));
-        notNull(userStorage.getUser(friendId));
+        getUserNotNull(userId);
+        getUserNotNull(friendId);
         friendRepository.delete(userId, friendId);
         feedRepository.create(new Feed(userId, EventType.FRIEND, Operation.REMOVE, friendId, Instant.now().toEpochMilli()));
     }
 
-    private User notNull(User user) {
+    private User getUserNotNull(long userId) {
+        User user = userStorage.getUser(userId);
         if (user == null) {
-            throw new NoSuchElementException("Пользователь не найден");
+            throw new NoSuchElementException(String.format("Юзер с id {%s} не найден", userId));
         }
         return user;
     }

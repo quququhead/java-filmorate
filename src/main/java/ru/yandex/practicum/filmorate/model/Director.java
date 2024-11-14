@@ -8,6 +8,6 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class Director {
     private long id;
-    @NotBlank(message = "email cannot be null, empty or blank")
+    @NotBlank(message = "director name cannot be null, empty or blank")
     private String name;
 }

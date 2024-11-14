@@ -18,7 +18,7 @@ public class DirectorService {
     }
 
     public Director findDirector(long directorId) {
-        return notNull(directorRepository.getDirector(directorId));
+        return getDirectorNotNull(directorId);
     }
 
     public Director createDirector(Director director) {
@@ -34,9 +34,10 @@ public class DirectorService {
         directorRepository.deleteDirector(directorId);
     }
 
-    private Director notNull(Director director) {
+    private Director getDirectorNotNull(long directorId) {
+        Director director = directorRepository.getDirector(directorId);
         if (director == null) {
-            throw new NoSuchElementException("Режиссер не найден");
+            throw new NoSuchElementException(String.format("Режиссер с id {%s} не найден", directorId));
         }
         return director;
     }

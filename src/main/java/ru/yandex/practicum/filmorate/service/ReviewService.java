@@ -37,13 +37,13 @@ public class ReviewService {
 
     public Review getReviewById(long id) {
         log.debug("getReviewById {}", id);
-        return notNull(reviewRepository.findOneById(id));
+        return getReviewNotNull(id);
     }
 
     public Review create(Review review) {
         log.debug("create review {}", review);
-        notNull(filmStorage.getFilm(review.filmId()));
-        notNull(userStorage.getUser(review.userId()));
+        filmExists(review.filmId());
+        userExists(review.userId());
         long reviewId = reviewRepository.create(review);
         feedRepository.create(new Feed(review.userId(), EventType.REVIEW, Operation.ADD, reviewId, Instant.now().toEpochMilli()));
         return new Review(
@@ -59,20 +59,21 @@ public class ReviewService {
     public Review update(Review review) {
         log.debug("update review {}", review);
         reviewRepository.update(review);
-        Review updatedReview = notNull(reviewRepository.findOneById(review.reviewId()));
+        Review updatedReview = getReviewNotNull(review.reviewId());
         feedRepository.create(new Feed(updatedReview.userId(), EventType.REVIEW, Operation.UPDATE, updatedReview.reviewId(), Instant.now().toEpochMilli()));
         return updatedReview;
     }
 
     public void delete(long id) {
         log.debug("delete review {}", id);
-        Review review = notNull(reviewRepository.findOneById(id));
+        Review review = getReviewNotNull(id);
         feedRepository.create(new Feed(review.userId(), EventType.REVIEW, Operation.REMOVE, id, Instant.now().toEpochMilli()));
         reviewRepository.delete(id);
     }
 
     public void addLike(long reviewId, long userId) {
         log.debug("{} addLike {}", reviewId, userId);
+        entitiesExist(reviewId, userId);
         reviewLikeRepository.insert(reviewId, userId);
         if (reviewDislikeRepository.exists(reviewId, userId) != 0) {
             removeDislike(reviewId, userId);
@@ -81,11 +82,13 @@ public class ReviewService {
 
     public void removeLike(long reviewId, long userId) {
         log.debug("{} removeLike {}", reviewId, userId);
+        entitiesExist(reviewId, userId);
         reviewLikeRepository.delete(reviewId, userId);
     }
 
     public void addDislike(long reviewId, long userId) {
         log.debug("{} addDislike {}", reviewId, userId);
+        entitiesExist(reviewId, userId);
         reviewDislikeRepository.insert(reviewId, userId);
         if (reviewLikeRepository.exists(reviewId, userId) != 0) {
             removeLike(reviewId, userId);
@@ -94,25 +97,34 @@ public class ReviewService {
 
     public void removeDislike(long reviewId, long userId) {
         log.debug("{} removeDislike {}", reviewId, userId);
+        entitiesExist(reviewId, userId);
         reviewDislikeRepository.delete(reviewId, userId);
     }
 
-    private Review notNull(Review review) {
+    private void entitiesExist(long reviewId, long userId) {
+        getReviewNotNull(reviewId);
+        userExists(userId);
+    }
+
+    private Review getReviewNotNull(long reviewId) {
+        Review review = reviewRepository.findOneById(reviewId);
         if (review == null) {
-            throw new NoSuchElementException("Отзыв не найден");
+            throw new NoSuchElementException(String.format("Отзыв с id {%s} не найден", reviewId));
         }
         return review;
     }
 
-    private void notNull(Film film) {
+    private void filmExists(long filmId) {
+        Film film = filmStorage.getFilm(filmId);
         if (film == null) {
-            throw new NoSuchElementException("Фильм не найден");
+            throw new NoSuchElementException(String.format("Фильм с id {%s} не найден", filmId));
         }
     }
 
-    private void notNull(User user) {
+    private void userExists(long userId) {
+        User user = userStorage.getUser(userId);
         if (user == null) {
-            throw new NoSuchElementException("Юзер не найден");
+            throw new NoSuchElementException(String.format("Юзер с id {%s} не найден", userId));
         }
     }
 }
