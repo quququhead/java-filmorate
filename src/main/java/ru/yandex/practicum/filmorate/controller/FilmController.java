@@ -2,27 +2,16 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
-@Validated
 public class FilmController {
 
     private final FilmService filmService;
@@ -38,12 +27,26 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> findTopFilms(@RequestParam(defaultValue = "10") Integer count) {
-        return filmService.findTopFilms(count);
+    public Collection<Film> findTopFilms(@RequestParam(defaultValue = "10") Integer count,
+                                         @RequestParam(required = false) Integer genreId,
+                                         @RequestParam(required = false) Integer year) {
+        return filmService.findTopFilms(genreId, year, count);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> findAllFilmsOfDirectorId(@PathVariable long directorId,
+                                                     @RequestParam String sortBy) {
+        return filmService.findAllFilmsOfDirectorId(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> findAllFilmsBySearch(@RequestParam String query,
+                                                 @RequestParam List<String> by) {
+        return filmService.findAllFilmsBySearch(query, by);
     }
 
     @PostMapping
-    public Film createFilm(@Valid @RequestBody Film film) throws ValidationException {
+    public Film createFilm(@Valid @RequestBody Film film) {
         return filmService.createFilm(film);
     }
 
@@ -53,12 +56,22 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film newFilm) throws NotFoundException, ValidationException {
+    public Film updateFilm(@Valid @RequestBody Film newFilm) {
         return filmService.updateFilm(newFilm);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable long filmId) {
+        filmService.deleteFilm(filmId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id, @PathVariable long userId) {
         filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 }
